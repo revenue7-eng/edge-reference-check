@@ -1,0 +1,12 @@
+<script>
+  (function () {
+    var link = document.querySelector('[rel="stylesheet"]');
+    var base = "{{ '/assets/css/just-the-docs-' | relative_url }}";
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    function apply(dark) {
+      link.setAttribute("href", base + (dark ? "dark" : "default") + ".css");
+    }
+    apply(mq.matches);
+    mq.addEventListener("change", function (e) { apply(e.matches); });
+  })();
+</script>
