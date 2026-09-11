@@ -17,6 +17,10 @@ Columns:
 - **L3 reference set**: signed reference set plus documented format, and
   a way for the device to produce a signed attestation envelope.
 
+The table has one row today, and it is this project's own. A row for another
+platform is welcome: open an issue with the URLs you checked and the date you
+checked them.
+
 | Operating system | Platform | L1 profile | L2 reference | L3 reference set | Checked | Source |
 | --- | --- | --- | --- | --- | --- | --- |
 | TactiQ OS | Radxa ROCK 5A (RK3588S) | not yet | not yet published | not yet published; envelope producer is public and alpha | 2026-09-11 | https://github.com/revenue7-eng/tactiq-attest |
