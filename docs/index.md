@@ -11,7 +11,7 @@ The check runs in the browser tab. There is no backend, no storage, no
 account, and no history. Nothing is uploaded, and everything is gone when
 the tab is closed.
 
-[Run a check](check.html){: .btn .btn-primary }
+[Run a check](check.html){: .btn }
 
 ## Three levels of checkability
 
