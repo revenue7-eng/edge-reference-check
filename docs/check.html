@@ -67,9 +67,19 @@
   .wrap { overflow-x: auto; }
   footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: .9rem; }
   a { color: inherit; }
+  .topbar { border-bottom: 1px solid var(--rule); }
+  .topbar div { max-width: 72ch; margin: 0 auto; padding: .7rem 1.25rem; display: flex; gap: 1.25rem; font-size: .9rem; }
+  .topbar a { color: var(--muted); text-decoration: none; }
+  .topbar a:hover { color: var(--ink); text-decoration: underline; }
 </style>
 </head>
 <body>
+<nav class="topbar"><div>
+  <a href="./">Home</a>
+  <a href="methodology.html">Methodology</a>
+  <a href="catalog.html">Catalog</a>
+  <a href="https://github.com/revenue7-eng/edge-reference-check">Source</a>
+</div></nav>
 <main>
   <h1>edge-reference-check</h1>
   <p class="lead">Check what an edge Linux system reports about itself against a profile. Everything below runs in this tab and is gone when you close it. Nothing is uploaded.</p>
