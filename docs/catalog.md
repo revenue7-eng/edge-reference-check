@@ -23,7 +23,7 @@ checked them.
 
 | Operating system | Platform | L1 profile | L2 reference | L3 reference set | Checked | Source |
 | --- | --- | --- | --- | --- | --- | --- |
-| TactiQ OS | Radxa ROCK 5A (RK3588S) | not yet | not yet published | not yet published; envelope producer is public and alpha | 2026-09-11 | https://github.com/revenue7-eng/tactiq-attest |
+| TactiQ OS | Radxa ROCK 5A (RK3588S) | not yet | not yet published | not yet published: the measured boot chain is not closed on this platform (no device-mapper target in the boot chain as of 2026-09-11), so there are no measurements to issue a reference for yet; the envelope producer is public and alpha | 2026-09-11 | https://github.com/revenue7-eng/tactiq-attest |
 | Talos Linux | bare metal (amd64, arm64) | not yet | published: release assets include `sha256sum.txt` covering ISO, raw and UKI images, and SPDX SBOMs; container images are signed with cosign. A signature over `sha256sum.txt` itself was not found at the release page on 2026-09-11 | not published, and not withheld: expected measurements are generated per UKI, signed with the PCR signing key held by the operator, and consumed only by the TPM unlock policy, so there is nothing for the publisher to publish in the SecureBoot flow | 2026-09-11 | https://github.com/siderolabs/talos/releases, https://docs.siderolabs.com/talos/v1.12/platform-specific-installations/bare-metal-platforms/secureboot |
 
 Rows are added one at a time, each with its own commit, so that the
