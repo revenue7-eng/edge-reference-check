@@ -1,29 +1,230 @@
 {
   "name": "Edge hardened baseline",
-  "version": 1,
+  "version": 2,
   "level": 1,
   "kind": "editorial",
   "description": "This project's opinion of a reasonable baseline for an unattended Linux edge device: a mandatory access control system enforcing, appraised file integrity, a read-only verified root, a locked-down kernel, and the common kernel self-protection options. It is a baseline, not a certification. A FAIL here means the device does not match this opinion; whether that matters depends on the device's threat model.",
   "checks": [
-    { "id": "selinux-enforcing", "title": "SELinux is enforcing", "source": "key", "key": "selinux", "expect": "Enforcing", "why": "Permissive mode logs denials but does not prevent them." },
-    { "id": "ima-appraise-enforce", "title": "IMA appraisal is enforcing", "source": "key", "key": "ima_appraise", "expect": "enforce", "why": "With appraisal off or in log mode, unsigned or modified files still execute." },
-    { "id": "root-on-mapper", "title": "Root filesystem is on device-mapper", "source": "key", "key": "root", "match": "^root=/dev/(dm-[0-9]+|mapper/)", "why": "A root on a raw partition has no integrity protection below the filesystem." },
-    { "id": "mapper-present", "title": "A device-mapper target is active", "source": "key", "key": "dm", "match": "^(?!NONE$).+", "why": "No active mapper target means no dm-verity or dm-crypt in the boot chain." },
-    { "id": "lockdown-active", "title": "Kernel lockdown is integrity or confidentiality", "source": "key", "key": "lockdown", "match": "\\[(integrity|confidentiality)\\]", "why": "Without lockdown, root can replace the running kernel through kexec, /dev/mem or unsigned modules." },
-    { "id": "cfg-module-sig-force", "title": "Module signatures are required", "source": "config", "option": "CONFIG_MODULE_SIG_FORCE", "expect": "y" },
-    { "id": "cfg-strict-kernel-rwx", "title": "Kernel text and rodata are write-protected", "source": "config", "option": "CONFIG_STRICT_KERNEL_RWX", "expect": "y" },
-    { "id": "cfg-strict-module-rwx", "title": "Module text and rodata are write-protected", "source": "config", "option": "CONFIG_STRICT_MODULE_RWX", "expect": "y" },
-    { "id": "cfg-lockdown-lsm", "title": "Lockdown LSM is built", "source": "config", "option": "CONFIG_SECURITY_LOCKDOWN_LSM", "expect": "y" },
-    { "id": "cfg-ima-appraise", "title": "IMA appraisal is built", "source": "config", "option": "CONFIG_IMA_APPRAISE", "expect": "y" },
-    { "id": "cfg-dm-verity", "title": "dm-verity is built", "source": "config", "option": "CONFIG_DM_VERITY", "expect": "y" },
-    { "id": "cfg-no-devmem", "title": "/dev/mem is not built", "source": "config", "option": "CONFIG_DEVMEM", "expect": "n" },
-    { "id": "cfg-stackprotector", "title": "Strong stack protector", "source": "config", "option": "CONFIG_STACKPROTECTOR_STRONG", "expect": "y" },
-    { "id": "cfg-randomize-base", "title": "Kernel base address randomised", "source": "config", "option": "CONFIG_RANDOMIZE_BASE", "expect": "y" },
-    { "id": "cfg-hardened-usercopy", "title": "Hardened usercopy", "source": "config", "option": "CONFIG_HARDENED_USERCOPY", "expect": "y" },
-    { "id": "cfg-init-on-alloc", "title": "Memory zeroed on allocation by default", "source": "config", "option": "CONFIG_INIT_ON_ALLOC_DEFAULT_ON", "expect": "y" },
-    { "id": "cfg-bpf-unpriv-off", "title": "Unprivileged BPF disabled by default", "source": "config", "option": "CONFIG_BPF_UNPRIV_DEFAULT_OFF", "expect": "y" },
-    { "id": "sysctl-kptr", "title": "Kernel pointers hidden", "source": "key", "key": "sysctl.kernel.kptr_restrict", "match": "^[12]$" },
-    { "id": "sysctl-dmesg", "title": "dmesg restricted", "source": "key", "key": "sysctl.kernel.dmesg_restrict", "expect": "1" },
-    { "id": "sysctl-ptrace", "title": "ptrace scope restricted", "source": "key", "key": "sysctl.kernel.yama.ptrace_scope", "match": "^[123]$" }
+    {
+      "id": "selinux-enforcing",
+      "title": "SELinux is enforcing",
+      "source": "key",
+      "key": "selinux",
+      "expect": "Enforcing",
+      "why": "Permissive mode logs denials but does not prevent them."
+    },
+    {
+      "id": "ima-appraise-enforce",
+      "title": "IMA appraisal is enforcing",
+      "source": "key",
+      "key": "ima_appraise",
+      "expect": "enforce",
+      "why": "With appraisal off or in log mode, unsigned or modified files still execute."
+    },
+    {
+      "id": "root-on-mapper",
+      "title": "Root filesystem is on device-mapper",
+      "source": "key",
+      "key": "root",
+      "match": "^root=/dev/(dm-[0-9]+|mapper/)",
+      "why": "A root on a raw partition has no integrity protection below the filesystem.",
+      "expect_label": "root= points at a device-mapper device"
+    },
+    {
+      "id": "mapper-present",
+      "title": "A device-mapper target is active",
+      "source": "key",
+      "key": "dm",
+      "match": "^(?!NONE$).+",
+      "why": "No active mapper target means no dm-verity or dm-crypt in the boot chain.",
+      "expect_label": "at least one mapper target other than control"
+    },
+    {
+      "id": "lockdown-active",
+      "title": "Kernel lockdown is integrity or confidentiality",
+      "source": "key",
+      "key": "lockdown",
+      "match": "\\[(integrity|confidentiality)\\]",
+      "why": "Without lockdown, root can replace the running kernel through kexec, /dev/mem or unsigned modules.",
+      "expect_label": "integrity or confidentiality is the selected mode"
+    },
+    {
+      "id": "cfg-module-sig-force",
+      "title": "Module signatures are required",
+      "source": "config",
+      "option": "CONFIG_MODULE_SIG_FORCE",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-strict-kernel-rwx",
+      "title": "Kernel text and rodata are write-protected",
+      "source": "config",
+      "option": "CONFIG_STRICT_KERNEL_RWX",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-strict-module-rwx",
+      "title": "Module text and rodata are write-protected",
+      "source": "config",
+      "option": "CONFIG_STRICT_MODULE_RWX",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-lockdown-lsm",
+      "title": "Lockdown LSM is built",
+      "source": "config",
+      "option": "CONFIG_SECURITY_LOCKDOWN_LSM",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-ima-appraise",
+      "title": "IMA appraisal is built",
+      "source": "config",
+      "option": "CONFIG_IMA_APPRAISE",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-dm-verity",
+      "title": "dm-verity is built",
+      "source": "config",
+      "option": "CONFIG_DM_VERITY",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-no-devmem",
+      "title": "/dev/mem is not built",
+      "source": "config",
+      "option": "CONFIG_DEVMEM",
+      "expect": "n",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-stackprotector",
+      "title": "Strong stack protector",
+      "source": "config",
+      "option": "CONFIG_STACKPROTECTOR_STRONG",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-randomize-base",
+      "title": "Kernel base address randomised",
+      "source": "config",
+      "option": "CONFIG_RANDOMIZE_BASE",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-hardened-usercopy",
+      "title": "Hardened usercopy",
+      "source": "config",
+      "option": "CONFIG_HARDENED_USERCOPY",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-init-on-alloc",
+      "title": "Memory zeroed on allocation by default",
+      "source": "config",
+      "option": "CONFIG_INIT_ON_ALLOC_DEFAULT_ON",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-bpf-unpriv-off",
+      "title": "Unprivileged BPF disabled by default",
+      "source": "config",
+      "option": "CONFIG_BPF_UNPRIV_DEFAULT_OFF",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-yama",
+      "title": "Yama LSM is built",
+      "source": "config",
+      "option": "CONFIG_SECURITY_YAMA",
+      "expect": "y",
+      "why": "Without Yama there is no ptrace_scope, so any process of the same uid can attach to any other.",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "sysctl-kptr",
+      "title": "Kernel pointers hidden",
+      "source": "key",
+      "key": "sysctl.kernel.kptr_restrict",
+      "match": "^[12]$"
+    },
+    {
+      "id": "sysctl-dmesg",
+      "title": "dmesg restricted",
+      "source": "key",
+      "key": "sysctl.kernel.dmesg_restrict",
+      "expect": "1"
+    },
+    {
+      "id": "sysctl-ptrace",
+      "title": "ptrace scope restricted",
+      "source": "key",
+      "key": "sysctl.kernel.yama.ptrace_scope",
+      "match": "^[123]$"
+    }
   ]
 }

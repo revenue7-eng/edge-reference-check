@@ -33,8 +33,10 @@ That decision belongs to a verifier, not to a web page.
 2. Open `docs/index.html` (or the published page) and paste the bundle.
 3. Pick a profile. The built-in profile is an editorial hardened-edge
    baseline; a publisher's profile can be loaded from a JSON file.
-4. Read the result. Every row is OK, FAIL or UNAVAILABLE, and UNAVAILABLE
-   means the device did not expose that fact, not that the fact is bad.
+4. Read the result. Every row is OK, FAIL, UNAVAILABLE or NOT APPLICABLE.
+   UNAVAILABLE means the device did not expose that fact. NOT APPLICABLE
+   means the profile expects that interface to be closed on this kind of
+   system. Neither is a failure.
 
 ## Repository layout
 

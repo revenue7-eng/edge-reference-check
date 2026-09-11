@@ -10,7 +10,14 @@
 # Every fact it cannot read is written as UNAVAILABLE, never guessed.
 
 OUT="${1:-/tmp/erc-bundle.txt}"
-TMP="/tmp/erc-bundle.$$"
+# The temp file must live beside the target, not in /tmp: BusyBox mv copies the
+# SELinux context across filesystems and vfat cannot store xattrs, so a move
+# from tmpfs to a USB stick fails with "setfilecon: Operation not supported".
+if [ "$OUT" = "-" ]; then
+  TMP="/tmp/erc-bundle.$$"
+else
+  TMP="$OUT.$$"
+fi
 
 emit() { printf '%s\n' "$*" >> "$TMP"; }
 key()  { printf 'KEY %s %s\n' "$1" "$2" >> "$TMP"; }
@@ -78,6 +85,12 @@ if [ -r /sys/kernel/security/ima/policy ]; then
   key ima_policy_available yes
 else
   key ima_policy_available no
+fi
+
+if [ -d /sys/kernel/security ]; then
+  key securityfs mounted
+else
+  key securityfs absent
 fi
 
 # ---- sysctls (read from /proc/sys, no sysctl binary needed) ---------------

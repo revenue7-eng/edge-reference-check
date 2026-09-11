@@ -36,6 +36,41 @@ counter-based protocol decides freshness by comparing the counter with a
 high-water mark persisted from the previous check. This page persists
 nothing, by rule. It shows the counter value and says so.
 
+## Two kinds of observability, and why hardening removes only one
+
+A system can be observed in two quite different ways, and the difference
+decides what a verification tool may conclude from silence.
+
+The first is self-description: interfaces through which a running system tells
+a local process about itself. `/proc/config.gz`, `/dev/mem`, a writable policy
+node in securityfs, debug interfaces. Each of these is both a source of facts
+for whoever is checking and a surface for whoever is attacking. A hardened
+production image closes them, or makes them read-only, on purpose.
+
+The second is produced evidence: what the system emits outward. A measurement
+log, a tamper event, a signed attestation envelope. These are never closed,
+because emitting them is the entire point of having them.
+
+Hardening removes the first and keeps the second. A tool that treats a closed
+interface as a missing answer therefore scores a hardened system as less
+verifiable than a system that left everything open, which is exactly backwards.
+
+This is why a check has three outcomes rather than two. OK and FAIL are
+answers. UNAVAILABLE means the check could not run and nobody decided that in
+advance. NOT APPLICABLE means the profile states that this interface is
+expected to be closed on this kind of system, so its absence is a design
+decision that has already been accounted for. A profile marks a check with
+`na_when` to say so, and gives a reason that is shown to the reader.
+
+The consequence for the levels above: a closed system does not become
+unverifiable. It stops being verifiable by the first method and remains
+verifiable by the third. Level 1 asks the system to describe itself and depends
+on interfaces that hardening closes. Level 3 asks for a signed statement the
+system produces anyway, and depends on a root of trust rather than on open
+interfaces. A publisher who closes the first without offering the third has
+made their system unverifiable; a publisher who closes the first and publishes
+a reference for the third has not.
+
 ## Why (operating system, platform) and not operating system
 
 Boot measurements depend on firmware and on the boot chain, and both are
@@ -71,9 +106,10 @@ accepts them.
 2. Every catalog claim has a source URL and a date. Absence of a
    reference is recorded as "not found at <URL> on <date>", not as
    "does not publish".
-3. UNAVAILABLE is a result, not a failure. A device that does not expose
-   `/proc/config.gz` has not failed a config check; the check could not
-   run.
+3. UNAVAILABLE and NOT APPLICABLE are results, not failures. A device that
+   does not expose `/proc/config.gz` has not failed a config check. If the
+   profile expected that interface to be closed, the check is NOT APPLICABLE
+   and says why; if nobody expected it either way, it is UNAVAILABLE.
 4. The built-in profile is editorial. It states what this project
    considers a reasonable hardened baseline for an unattended edge device
    and is marked as such. Publishers' profiles state what the publisher

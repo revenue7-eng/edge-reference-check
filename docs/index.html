@@ -51,7 +51,11 @@
   th, td { text-align: left; vertical-align: top; padding: .45rem .5rem; border-bottom: 1px solid var(--rule); }
   th { font-weight: 600; color: var(--muted); font-size: .85rem; }
   td.st { white-space: nowrap; font-weight: 700; width: 7.5rem; }
-  .OK { color: var(--ok); } .FAIL { color: var(--fail); } .UNAVAILABLE { color: var(--na); }
+  .OK { color: var(--ok); } .FAIL { color: var(--fail); } .UNAVAILABLE { color: var(--na); } .NA { color: var(--na); }
+  .filebtn { display: inline-flex; align-items: center; gap: .6rem; }
+  .filebtn button { border-color: var(--rule); background: var(--field); color: var(--ink); font-weight: 600; }
+  .filebtn .fname { color: var(--muted); font-size: .9rem; }
+  input[type=file].hidden { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
   td.val { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .82rem; word-break: break-all; }
   .why { display: block; color: var(--muted); font-size: .85rem; margin-top: .15rem; }
   .summary { margin: 1rem 0 .25rem; font-weight: 600; }
@@ -72,7 +76,11 @@
   <label for="bundle">Bundle text</label>
   <textarea id="bundle" spellcheck="false" placeholder="===EDGE-REFERENCE-CHECK BUNDLE v1===&#10;KEY bundle_version 1&#10;..."></textarea>
   <div class="row">
-    <input type="file" id="bundleFile" accept=".txt,text/plain" aria-label="Load bundle from file">
+    <span class="filebtn">
+      <input type="file" id="bundleFile" class="hidden" accept=".txt,text/plain" tabindex="-1">
+      <button type="button" id="bundleFileBtn">Load bundle file</button>
+      <span class="fname" id="bundleFileName">no file loaded</span>
+    </span>
   </div>
 
   <h2>2. Profile</h2>
@@ -82,7 +90,11 @@
       <option value="builtin">Edge hardened baseline (editorial, built in)</option>
       <option value="file">From file</option>
     </select>
-    <input type="file" id="profileFile" accept=".json,application/json" aria-label="Load profile from file" disabled>
+    <span class="filebtn">
+      <input type="file" id="profileFile" class="hidden" accept=".json,application/json" tabindex="-1">
+      <button type="button" id="profileFileBtn" disabled>Load profile file</button>
+      <span class="fname" id="profileFileName">using the built-in profile</span>
+    </span>
   </div>
 
   <div class="row" style="margin-top:1.25rem">
@@ -98,7 +110,7 @@
       <thead><tr><th>Status</th><th>Check</th><th>Observed</th><th>Expected</th></tr></thead>
       <tbody></tbody>
     </table></div>
-    <p class="hint" style="margin-top:1rem">This is level 1: configuration as the system reported it. The bundle is not signed. A system that has been tampered with can report anything. UNAVAILABLE means the device did not expose that fact; it is not a failure.</p>
+    <p class="hint" style="margin-top:1rem">This is level 1: configuration as the system reported it. The bundle is not signed, so a system that has been tampered with can report anything. UNAVAILABLE means the device did not expose that fact and the check could not run. NOT APPLICABLE means the profile expects that interface to be closed on this kind of system, which is a hardening decision rather than a gap. Neither is a failure.</p>
   </section>
 
   <footer>
@@ -109,31 +121,232 @@
 <script type="application/json" id="builtinProfile">
 {
   "name": "Edge hardened baseline",
-  "version": 1,
+  "version": 2,
   "level": 1,
   "kind": "editorial",
   "description": "This project's opinion of a reasonable baseline for an unattended Linux edge device: a mandatory access control system enforcing, appraised file integrity, a read-only verified root, a locked-down kernel, and the common kernel self-protection options. It is a baseline, not a certification. A FAIL here means the device does not match this opinion; whether that matters depends on the device's threat model.",
   "checks": [
-    { "id": "selinux-enforcing", "title": "SELinux is enforcing", "source": "key", "key": "selinux", "expect": "Enforcing", "why": "Permissive mode logs denials but does not prevent them." },
-    { "id": "ima-appraise-enforce", "title": "IMA appraisal is enforcing", "source": "key", "key": "ima_appraise", "expect": "enforce", "why": "With appraisal off or in log mode, unsigned or modified files still execute." },
-    { "id": "root-on-mapper", "title": "Root filesystem is on device-mapper", "source": "key", "key": "root", "match": "^root=/dev/(dm-[0-9]+|mapper/)", "why": "A root on a raw partition has no integrity protection below the filesystem." },
-    { "id": "mapper-present", "title": "A device-mapper target is active", "source": "key", "key": "dm", "match": "^(?!NONE$).+", "why": "No active mapper target means no dm-verity or dm-crypt in the boot chain." },
-    { "id": "lockdown-active", "title": "Kernel lockdown is integrity or confidentiality", "source": "key", "key": "lockdown", "match": "\\[(integrity|confidentiality)\\]", "why": "Without lockdown, root can replace the running kernel through kexec, /dev/mem or unsigned modules." },
-    { "id": "cfg-module-sig-force", "title": "Module signatures are required", "source": "config", "option": "CONFIG_MODULE_SIG_FORCE", "expect": "y" },
-    { "id": "cfg-strict-kernel-rwx", "title": "Kernel text and rodata are write-protected", "source": "config", "option": "CONFIG_STRICT_KERNEL_RWX", "expect": "y" },
-    { "id": "cfg-strict-module-rwx", "title": "Module text and rodata are write-protected", "source": "config", "option": "CONFIG_STRICT_MODULE_RWX", "expect": "y" },
-    { "id": "cfg-lockdown-lsm", "title": "Lockdown LSM is built", "source": "config", "option": "CONFIG_SECURITY_LOCKDOWN_LSM", "expect": "y" },
-    { "id": "cfg-ima-appraise", "title": "IMA appraisal is built", "source": "config", "option": "CONFIG_IMA_APPRAISE", "expect": "y" },
-    { "id": "cfg-dm-verity", "title": "dm-verity is built", "source": "config", "option": "CONFIG_DM_VERITY", "expect": "y" },
-    { "id": "cfg-no-devmem", "title": "/dev/mem is not built", "source": "config", "option": "CONFIG_DEVMEM", "expect": "n" },
-    { "id": "cfg-stackprotector", "title": "Strong stack protector", "source": "config", "option": "CONFIG_STACKPROTECTOR_STRONG", "expect": "y" },
-    { "id": "cfg-randomize-base", "title": "Kernel base address randomised", "source": "config", "option": "CONFIG_RANDOMIZE_BASE", "expect": "y" },
-    { "id": "cfg-hardened-usercopy", "title": "Hardened usercopy", "source": "config", "option": "CONFIG_HARDENED_USERCOPY", "expect": "y" },
-    { "id": "cfg-init-on-alloc", "title": "Memory zeroed on allocation by default", "source": "config", "option": "CONFIG_INIT_ON_ALLOC_DEFAULT_ON", "expect": "y" },
-    { "id": "cfg-bpf-unpriv-off", "title": "Unprivileged BPF disabled by default", "source": "config", "option": "CONFIG_BPF_UNPRIV_DEFAULT_OFF", "expect": "y" },
-    { "id": "sysctl-kptr", "title": "Kernel pointers hidden", "source": "key", "key": "sysctl.kernel.kptr_restrict", "match": "^[12]$" },
-    { "id": "sysctl-dmesg", "title": "dmesg restricted", "source": "key", "key": "sysctl.kernel.dmesg_restrict", "expect": "1" },
-    { "id": "sysctl-ptrace", "title": "ptrace scope restricted", "source": "key", "key": "sysctl.kernel.yama.ptrace_scope", "match": "^[123]$" }
+    {
+      "id": "selinux-enforcing",
+      "title": "SELinux is enforcing",
+      "source": "key",
+      "key": "selinux",
+      "expect": "Enforcing",
+      "why": "Permissive mode logs denials but does not prevent them."
+    },
+    {
+      "id": "ima-appraise-enforce",
+      "title": "IMA appraisal is enforcing",
+      "source": "key",
+      "key": "ima_appraise",
+      "expect": "enforce",
+      "why": "With appraisal off or in log mode, unsigned or modified files still execute."
+    },
+    {
+      "id": "root-on-mapper",
+      "title": "Root filesystem is on device-mapper",
+      "source": "key",
+      "key": "root",
+      "match": "^root=/dev/(dm-[0-9]+|mapper/)",
+      "why": "A root on a raw partition has no integrity protection below the filesystem.",
+      "expect_label": "root= points at a device-mapper device"
+    },
+    {
+      "id": "mapper-present",
+      "title": "A device-mapper target is active",
+      "source": "key",
+      "key": "dm",
+      "match": "^(?!NONE$).+",
+      "why": "No active mapper target means no dm-verity or dm-crypt in the boot chain.",
+      "expect_label": "at least one mapper target other than control"
+    },
+    {
+      "id": "lockdown-active",
+      "title": "Kernel lockdown is integrity or confidentiality",
+      "source": "key",
+      "key": "lockdown",
+      "match": "\\[(integrity|confidentiality)\\]",
+      "why": "Without lockdown, root can replace the running kernel through kexec, /dev/mem or unsigned modules.",
+      "expect_label": "integrity or confidentiality is the selected mode"
+    },
+    {
+      "id": "cfg-module-sig-force",
+      "title": "Module signatures are required",
+      "source": "config",
+      "option": "CONFIG_MODULE_SIG_FORCE",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-strict-kernel-rwx",
+      "title": "Kernel text and rodata are write-protected",
+      "source": "config",
+      "option": "CONFIG_STRICT_KERNEL_RWX",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-strict-module-rwx",
+      "title": "Module text and rodata are write-protected",
+      "source": "config",
+      "option": "CONFIG_STRICT_MODULE_RWX",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-lockdown-lsm",
+      "title": "Lockdown LSM is built",
+      "source": "config",
+      "option": "CONFIG_SECURITY_LOCKDOWN_LSM",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-ima-appraise",
+      "title": "IMA appraisal is built",
+      "source": "config",
+      "option": "CONFIG_IMA_APPRAISE",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-dm-verity",
+      "title": "dm-verity is built",
+      "source": "config",
+      "option": "CONFIG_DM_VERITY",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-no-devmem",
+      "title": "/dev/mem is not built",
+      "source": "config",
+      "option": "CONFIG_DEVMEM",
+      "expect": "n",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-stackprotector",
+      "title": "Strong stack protector",
+      "source": "config",
+      "option": "CONFIG_STACKPROTECTOR_STRONG",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-randomize-base",
+      "title": "Kernel base address randomised",
+      "source": "config",
+      "option": "CONFIG_RANDOMIZE_BASE",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-hardened-usercopy",
+      "title": "Hardened usercopy",
+      "source": "config",
+      "option": "CONFIG_HARDENED_USERCOPY",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-init-on-alloc",
+      "title": "Memory zeroed on allocation by default",
+      "source": "config",
+      "option": "CONFIG_INIT_ON_ALLOC_DEFAULT_ON",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-bpf-unpriv-off",
+      "title": "Unprivileged BPF disabled by default",
+      "source": "config",
+      "option": "CONFIG_BPF_UNPRIV_DEFAULT_OFF",
+      "expect": "y",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "cfg-yama",
+      "title": "Yama LSM is built",
+      "source": "config",
+      "option": "CONFIG_SECURITY_YAMA",
+      "expect": "y",
+      "why": "Without Yama there is no ptrace_scope, so any process of the same uid can attach to any other.",
+      "na_when": {
+        "key": "config_available",
+        "equals": "no"
+      },
+      "na_reason": "The kernel does not expose its configuration. On a hardened image this is deliberate, not a gap."
+    },
+    {
+      "id": "sysctl-kptr",
+      "title": "Kernel pointers hidden",
+      "source": "key",
+      "key": "sysctl.kernel.kptr_restrict",
+      "match": "^[12]$"
+    },
+    {
+      "id": "sysctl-dmesg",
+      "title": "dmesg restricted",
+      "source": "key",
+      "key": "sysctl.kernel.dmesg_restrict",
+      "expect": "1"
+    },
+    {
+      "id": "sysctl-ptrace",
+      "title": "ptrace scope restricted",
+      "source": "key",
+      "key": "sysctl.kernel.yama.ptrace_scope",
+      "match": "^[123]$"
+    }
   ]
 }
 </script>
@@ -145,22 +358,32 @@
   var bundleEl = $('bundle'), msg = $('msg'), out = $('out');
   var loadedProfile = null;
 
+  $('bundleFileBtn').addEventListener('click', function () { $('bundleFile').click(); });
+  $('profileFileBtn').addEventListener('click', function () { $('profileFile').click(); });
+
   $('bundleFile').addEventListener('change', function (e) {
     var f = e.target.files[0]; if (!f) return;
     var r = new FileReader();
-    r.onload = function () { bundleEl.value = r.result; msg.textContent = 'Loaded ' + f.name + ' (' + r.result.length + ' bytes)'; };
+    r.onload = function () {
+      bundleEl.value = r.result;
+      $('bundleFileName').textContent = f.name + ' (' + r.result.length + ' bytes)';
+      msg.className = 'hint'; msg.textContent = '';
+    };
     r.readAsText(f);
   });
 
   $('profileSel').addEventListener('change', function () {
-    $('profileFile').disabled = this.value !== 'file';
+    var fromFile = this.value === 'file';
+    $('profileFileBtn').disabled = !fromFile;
+    if (!fromFile) { loadedProfile = null; $('profileFileName').textContent = 'using the built-in profile'; }
+    else if (!loadedProfile) { $('profileFileName').textContent = 'no file loaded'; }
   });
   $('profileFile').addEventListener('change', function (e) {
     var f = e.target.files[0]; if (!f) return;
     var r = new FileReader();
     r.onload = function () {
-      try { loadedProfile = JSON.parse(r.result); msg.textContent = 'Profile: ' + (loadedProfile.name || f.name); msg.className = 'hint'; }
-      catch (err) { loadedProfile = null; msg.textContent = 'Profile file is not valid JSON: ' + err.message; msg.className = 'hint err'; }
+      try { loadedProfile = JSON.parse(r.result); $('profileFileName').textContent = loadedProfile.name || f.name; msg.className = 'hint'; msg.textContent = ''; }
+      catch (err) { loadedProfile = null; $('profileFileName').textContent = 'not valid JSON'; msg.textContent = 'Profile file is not valid JSON: ' + err.message; msg.className = 'hint err'; }
     };
     r.readAsText(f);
   });
@@ -190,6 +413,12 @@
 
   function evalCheck(c, b) {
     var observed, expected;
+    // A deliberately closed interface is not a gap in the evidence. If the
+    // profile says so, the check is NOT APPLICABLE, which is neither a pass
+    // nor a missing answer.
+    if (c.na_when && b.keys[c.na_when.key] === c.na_when.equals) {
+      return { st: 'NA', obs: c.na_reason || 'not applicable on this system', exp: expectStr(c) };
+    }
     if (c.source === 'key') {
       observed = b.keys[c.key];
       if (observed === undefined || observed === 'UNAVAILABLE') return { st: 'UNAVAILABLE', obs: observed === undefined ? 'key not in bundle' : 'UNAVAILABLE', exp: expectStr(c) };
@@ -215,6 +444,7 @@
     return { st: res ? 'OK' : 'FAIL', obs: observed, exp: expected };
   }
   function expectStr(c) {
+    if (c.expect_label) return c.expect_label;
     if (c.expect !== undefined) return c.expect;
     if (c.any_of) return 'one of: ' + c.any_of.join(', ');
     if (c.match) return 'matches /' + c.match + '/';
@@ -233,20 +463,23 @@
     if (!b.ok) { msg.className = 'hint err'; msg.textContent = 'Not a v1 bundle: expected the header line and ===END===.'; return; }
 
     var tb = $('tbl').querySelector('tbody'); tb.textContent = '';
-    var counts = { OK: 0, FAIL: 0, UNAVAILABLE: 0 };
+    var counts = { OK: 0, FAIL: 0, UNAVAILABLE: 0, NA: 0 };
+    var LABEL = { OK: 'OK', FAIL: 'FAIL', UNAVAILABLE: 'UNAVAILABLE', NA: 'NOT APPLICABLE' };
     profile.checks.forEach(function (c) {
       var r = evalCheck(c, b); counts[r.st]++;
       var tr = document.createElement('tr');
-      tr.appendChild(td(r.st, 'st ' + r.st));
+      tr.appendChild(td(LABEL[r.st], 'st ' + r.st));
       var t2 = td(c.title);
-      if (r.st === 'FAIL' && c.why) { var w = document.createElement('span'); w.className = 'why'; w.textContent = c.why; t2.appendChild(w); }
+      var note = (r.st === 'FAIL') ? c.why : null;
+      if (note) { var w = document.createElement('span'); w.className = 'why'; w.textContent = note; t2.appendChild(w); }
       tr.appendChild(t2);
       tr.appendChild(td(r.obs, 'val'));
       tr.appendChild(td(r.exp, 'val'));
       tb.appendChild(tr);
     });
     $('summary').textContent = profile.name + ' (' + (profile.kind || 'unspecified') + '): ' +
-      counts.OK + ' OK, ' + counts.FAIL + ' FAIL, ' + counts.UNAVAILABLE + ' UNAVAILABLE of ' + profile.checks.length;
+      counts.OK + ' OK, ' + counts.FAIL + ' FAIL, ' + counts.UNAVAILABLE + ' UNAVAILABLE, ' +
+      counts.NA + ' NOT APPLICABLE of ' + profile.checks.length;
     var facts = $('facts'); facts.textContent = '';
     ['uname_r', 'uname_m', 'selinux', 'ima_appraise', 'root', 'dm', 'slot', 'lockdown', 'ima_measurements', 'config_available'].forEach(function (k) {
       if (b.keys[k] === undefined) return;
