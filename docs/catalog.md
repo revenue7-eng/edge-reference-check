@@ -4,6 +4,7 @@ layout: default
 nav_order: 3
 ---
 
+# Catalog
 Which (operating system, platform) pairs publish references, and at what
 level. Every cell that says anything has a source URL and a date. A cell
 that says "not found" names where we looked.

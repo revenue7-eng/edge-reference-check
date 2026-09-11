@@ -4,6 +4,7 @@ layout: default
 nav_order: 2
 ---
 
+# Methodology
 ## Purpose
 
 Most claims about edge operating systems are made in slides. This project
@@ -108,7 +109,7 @@ accepts them.
    the browser and is gone when the tab closes. Anything that requires
    state between checks is out of scope by definition.
 2. Every catalog claim has a source URL and a date. Absence of a
-   reference is recorded as "not found at <URL> on <date>", not as
+   reference is recorded as "not found at `<URL>` on `<date>`", not as
    "does not publish".
 3. UNAVAILABLE and NOT APPLICABLE are results, not failures. A device that
    does not expose `/proc/config.gz` has not failed a config check. If the
