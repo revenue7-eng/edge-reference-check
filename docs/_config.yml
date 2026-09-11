@@ -1,7 +1,7 @@
 title: edge-reference-check
 description: Check what an edge Linux system reports about itself against a profile. Runs in the browser.
 
-remote_theme: just-the-docs/just-the-docs
+remote_theme: just-the-docs/just-the-docs@v0.12.0
 
 color_scheme: light
 search_enabled: true
@@ -15,4 +15,3 @@ nav_external_links:
   - title: Run a check
     url: https://revenue7-eng.github.io/edge-reference-check/check.html
 
-footer_content: "Apache-2.0. The built-in profile is editorial: the opinion of this project, not a certification."

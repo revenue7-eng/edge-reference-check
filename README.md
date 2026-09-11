@@ -42,10 +42,13 @@ That decision belongs to a verifier, not to a web page.
 
 - `collect.sh`: bundle collector, POSIX sh, BusyBox-safe.
 - `profiles/`: profile schema and profiles. A profile is data, not code.
-- `catalog/`: which (OS, platform) pairs publish references, and at what level.
-- `docs/`: the page. Single file, no dependencies.
-- `METHODOLOGY.md`: what each level means, what counts as a published
+- `docs/`: the site, published with GitHub Pages.
+- `docs/check.html`: the check itself. One file, no dependencies, no build
+  step, and no code from the rest of this repository.
+- `docs/methodology.md`: what each level means, what counts as a published
   reference, and the rules this project holds itself to.
+- `docs/catalog.md`: which (OS, platform) pairs publish references, and at
+  what level.
 
 ## Contributing a profile or a catalog row
 

@@ -1,4 +1,8 @@
-# Methodology
+---
+title: Methodology
+layout: default
+nav_order: 2
+---
 
 ## Purpose
 
