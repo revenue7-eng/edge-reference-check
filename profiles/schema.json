@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/revenue7-eng/edge-reference-check/profiles/schema.json",
+  "title": "edge-reference-check profile",
+  "description": "A level-1 profile: a named list of checks evaluated against a collect.sh bundle. Profiles are data, not code.",
+  "type": "object",
+  "required": ["name", "version", "level", "kind", "checks"],
+  "additionalProperties": false,
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "version": { "type": "integer", "minimum": 1 },
+    "level": { "const": 1 },
+    "kind": {
+      "type": "string",
+      "enum": ["editorial", "publisher", "operator"],
+      "description": "editorial: this project's opinion. publisher: what the OS publisher claims for a named (OS, platform). operator: a profile an operator wrote for their own fleet."
+    },
+    "os": { "type": "string", "description": "Required when kind is publisher." },
+    "platform": { "type": "string", "description": "Required when kind is publisher." },
+    "source": { "type": "string", "format": "uri", "description": "Where the claims in this profile come from." },
+    "description": { "type": "string" },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/check" }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "required": ["id", "title", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "title": { "type": "string" },
+        "why": { "type": "string", "description": "One sentence. Shown next to a FAIL." },
+        "source": {
+          "type": "string",
+          "enum": ["key", "config", "cmdline"],
+          "description": "key: a KEY line from the bundle. config: a CONFIG_ option from the config section. cmdline: the kernel command line."
+        },
+        "key": { "type": "string", "description": "For source=key: the key name, e.g. selinux, ima_appraise, sysctl.kernel.kptr_restrict." },
+        "option": { "type": "string", "pattern": "^CONFIG_[A-Z0-9_]+$", "description": "For source=config." },
+        "expect": { "type": "string", "description": "Exact expected value. For config, 'y', 'm', 'n' ('n' means the option is not set or absent)." },
+        "match": { "type": "string", "description": "ECMAScript regular expression the value must match. Used instead of expect." },
+        "any_of": { "type": "array", "items": { "type": "string" }, "description": "The value must equal one of these." }
+      }
+    }
+  }
+}
