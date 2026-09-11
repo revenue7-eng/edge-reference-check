@@ -67,10 +67,16 @@
   .wrap { overflow-x: auto; }
   footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: .9rem; }
   a { color: inherit; }
-  .topbar { border-bottom: 1px solid var(--rule); }
-  .topbar div { max-width: 72ch; margin: 0 auto; padding: .7rem 1.25rem; display: flex; gap: 1.25rem; font-size: .9rem; }
-  .topbar a { color: var(--muted); text-decoration: none; }
+  .topbar a { color: var(--muted); text-decoration: none; font-size: .9rem; }
   .topbar a:hover { color: var(--ink); text-decoration: underline; }
+  .topbar div { display: flex; gap: 1.25rem; padding: .7rem 1.25rem; }
+  @media (min-width: 60rem) {
+    .topbar { position: fixed; top: 0; left: 0; width: 16.5rem; height: 100%; border-right: 1px solid var(--rule); }
+    .topbar div { flex-direction: column; gap: .6rem; padding: 2.6rem 1.5rem; }
+    body { padding-left: 16.5rem; }
+    main { margin: 0; padding-left: 2.5rem; }
+  }
+  @media (max-width: 59.99rem) { .topbar { border-bottom: 1px solid var(--rule); } }
 </style>
 </head>
 <body>
