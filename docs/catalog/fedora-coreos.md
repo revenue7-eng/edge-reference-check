@@ -63,7 +63,21 @@ Our output, 2026-09-13: HTTP 200, 566 bytes.
 
 ## SBOM
 
-`not examined`.
+`not found`, established 2026-09-13. Three places were examined: the stream
+metadata, the build's own `meta.json`, and the publisher's GitHub
+organisation.
+
+```sh
+B=https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/44.20260817.3.2/x86_64
+curl -s $B/meta.json | python3 -c 'import sys,json; d=json.load(sys.stdin); print(sorted(d["images"])); print(sorted(next(iter(d["images"].values()))))'
+```
+
+Our output, 2026-09-13: 28 image entries, and each one carries exactly four
+fields, `path`, `sha256`, `size` and `skip-compression`. No SBOM key appears
+anywhere in the build metadata.
+
+The `coreos` organisation on GitHub does publish signed release assets, but for
+its tools (`ignition`, `butane`) rather than for the operating system images.
 
 ## Transparency log
 
@@ -90,4 +104,4 @@ Source: <https://github.com/coreos/fedora-coreos-docs/blob/main/modules/ROOT/pag
 | Date | What was checked | Result |
 | --- | --- | --- |
 | 2026-09-11 | Integrity, signature, expected measurements | First pass. Per-artefact signatures, no image-level measurements |
-| 2026-09-13 | Integrity, signature, against release `44.20260817.3.2` | Both confirmed unchanged. Detached signature fetched and present, 566 bytes |
+| 2026-09-13 | Integrity, signature, SBOM, against release `44.20260817.3.2` | Integrity and signature confirmed unchanged, detached signature fetched, 566 bytes. SBOM moved from `not examined` to `not found` after the build metadata and the publisher's GitHub organisation were examined |

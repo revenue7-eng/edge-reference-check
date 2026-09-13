@@ -69,10 +69,18 @@ The bundle is `application/vnd.dev.sigstore.bundle.v0.3+json` and carries an
 x509 certificate. This is a signature over the checksum file, which is the
 thing that was missing in the earlier verdict.
 
+The pattern is not limited to one file. `sha512sum.txt` is released with its
+own bundle, and so is every other asset, including each SPDX document. A full
+listing of the publisher's organisation on 2026-09-13 showed the same
+construction across its projects: a `sha256sum.txt` in each, and bundles beside
+the artefacts.
+
 ## SBOM
 
-`published`, established 2026-09-13. The release includes SPDX documents for
-the system and for the container image, per architecture:
+`published` and signed, established 2026-09-13. The release includes SPDX
+documents for the system and for the container image, per architecture, and
+each has its own Sigstore bundle, so the bill of materials is inside the signed
+set rather than beside it:
 `talos-amd64.spdx.json`, `talos-arm64.spdx.json`,
 `talos-container-amd64.spdx.json`, `talos-container-arm64.spdx.json`. Each has
 its own `.bundle`.
@@ -138,4 +146,4 @@ Source: <https://docs.siderolabs.com/talos/v1.12/platform-specific-installations
 | Date | What was checked | Result |
 | --- | --- | --- |
 | 2026-09-11 | Integrity, signature, SBOM, expected measurements | First pass. Signature recorded as `not found`: `.sig`, `.asc` and `.pem` are absent |
-| 2026-09-13 | Integrity, signature, SBOM, transparency log, against `v1.14.0` | Integrity and SBOM confirmed. Signature corrected to `published`: the signature is a Sigstore bundle, `sha256sum.txt.bundle`, not a `.sig` file. Transparency log moved from `not examined` to `published` on the Rekor entry inside that bundle |
+| 2026-09-13 | Integrity, signature, SBOM, transparency log, against `v1.14.0` | Integrity confirmed. SBOM confirmed and found to be signed by its own bundle. Signature corrected to `published`: the signature is a Sigstore bundle, `sha256sum.txt.bundle`, not a `.sig` file. Transparency log moved from `not examined` to `published` on the Rekor entry inside that bundle |

@@ -24,6 +24,7 @@ absence.
 | [Ubuntu Core](ubuntu-core) | bare metal, VMs | published | published | not found | not found |
 | [Torizon OS](torizon-os) | SL1680 | published | not found | not found | not found |
 | [Foundries.io LmP](foundries-lmp) | per-Factory | not found | not found | not found | not found |
+| [Wind River Linux](wind-river-linux) | no public release | not found | not found | not found | not found |
 
 The platform is a column because a reference belongs to an (operating system,
 platform) pair, not to an operating system. Boot measurements depend on
@@ -56,7 +57,7 @@ not belong in this table.
 
 ## What the table says so far
 
-Six publishers. Five release a public artefact and assert which bytes it is,
+Seven publishers. Five release a public artefact and assert which bytes it is,
 by five different mechanisms: a Sigstore bundle over the checksum file, a
 detached signature per artefact, a detached OpenPGP signature over the checksum
 file, a keyless certificate bound to a release workflow, and digest sidecars
@@ -64,12 +65,16 @@ with no signature at all. Four of those five sign the assertion. One does not,
 and a reader who sees a directory full of digests can easily miss that, which
 is why the table separates identity from signature.
 
-The sixth releases per customer, so a person outside that relationship has
-nothing to check at all. That row is empty across the board, and it is in the
-table because this shape is common and a catalog that showed only publishers
-with something to show would misrepresent the market.
+Two release nothing a person outside a commercial relationship can fetch, so
+for them there is nothing to check at all. Those rows are empty across the
+board, and they are in the table because this shape is common and a catalog
+that showed only publishers with something to show would misrepresent the
+market. They arrived there differently: one moved its artefacts into
+per-customer factories, the other used to serve prebuilt binaries from a public
+page that now forwards to marketing. For both, every public repository of every
+public organisation was enumerated before the row was written.
 
-On the second half of level 2 all six agree: not one of them issues
+On the second half of level 2 all seven agree: not one of them issues
 the boot measurements a device of that platform should produce. Where the
 mechanism is documented, it computes the sealing target on the device at
 installation, or generates it per image under a key the operator or the

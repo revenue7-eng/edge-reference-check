@@ -46,6 +46,14 @@ The documentation has not caught up with the change. A reader following it
 lands on a dead link, which is a different failure from a publisher who states
 plainly that it publishes nothing.
 
+The organisation was enumerated in full rather than sampled: 79 public
+repositories that are not forks. Releases carrying downloadable assets exist in
+thirteen of them, and every one is a tool rather than an operating system:
+`fioctl`, `update-server`, `composeapp`, `fioup`, `fio-style`, `aktualizr-nano`,
+`libtufnano`, `tuftree`, `docs` and the packaging repositories. The one
+repository that holds the reference builds, `lmp-manifest`, has releases with
+no assets at all.
+
 ## Signature
 
 `not found`, established 2026-09-13. There is no public artefact to sign.
