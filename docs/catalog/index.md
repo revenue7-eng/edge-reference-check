@@ -16,20 +16,26 @@ A claim that says "not found" names where we looked; a claim that says "not
 examined" means nobody has looked yet, and says so rather than implying
 absence.
 
-| System | L1 | Artifact identity | Signed | Expected measurements | L3 |
+| System and platform | L1 | Artifact identity | Signed | Expected measurements | L3 |
 | --- | --- | --- | --- | --- | --- |
-| [TactiQ OS](tactiq-os) | not yet | published | published | not yet | not yet |
-| [Talos Linux](talos-linux) | not yet | published | published | none to publish | none to publish |
-| [Fedora CoreOS](fedora-coreos) | not yet | published | published | not found | not found |
-| [Ubuntu Core](ubuntu-core) | not yet | published | published | not found | not found |
-| [Torizon OS](torizon-os) | not yet | published | not found | not found | not found |
+| [TactiQ OS on ROCK 5A](tactiq-os) | not yet | published | published | not yet | not yet |
+| [Talos Linux on bare metal](talos-linux) | not yet | published | published | none to publish | none to publish |
+| [Fedora CoreOS on bare metal](fedora-coreos) | not yet | published | published | not found | not found |
+| [Ubuntu Core on bare metal and VMs](ubuntu-core) | not yet | published | published | not found | not found |
+| [Torizon OS on SL1680](torizon-os) | not yet | published | not found | not found | not found |
 
-References are keyed by (operating system, platform) pairs, not by operating
-system, so the pairs each verdict covers are named at the top of that system's
-page. They are not in this table because a verdict that differs between two
-platforms of the same system splits into its own page instead.
+The platform is in the name of the row because a reference belongs to an
+(operating system, platform) pair, not to an operating system. Boot
+measurements depend on firmware and on the boot chain, and both are
+platform-specific, so a verdict about one platform says nothing about another.
+Torizon OS is released for six platform families and one of them is checked
+here; that limit is in the row rather than in a footnote.
 
-This table also carries no dates. A verdict is established per section, not per
+The architectures each row covers are named at the top of that system's page.
+They are not in the table because they do not change a verdict: when they do,
+the row splits and the difference shows up in the row name itself.
+
+This table carries no dates. A verdict is established per section, not per
 system: a signature can be re-checked without touching the SBOM, so one date
 per row would be wrong the moment the second check happens. Dates live next to
 the verdicts they belong to.
