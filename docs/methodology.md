@@ -92,6 +92,13 @@ For level 2: image hash and expected measurements, released by the
 publisher at a stable URL, for a named platform. A hash in a release note
 counts. A hash that must be requested by email does not.
 
+The catalog records these two halves in separate columns, artifact identity
+and expected measurements, because a publisher can assert which bytes were
+released without issuing the measurements a device of that platform should
+produce, and most publishers do exactly that. A pair reaches level 2 only when
+both are present. Recording them in one cell hides which half is missing,
+which is the thing a reader came to find out.
+
 For level 3: a reference set, meaning the expected measurement selection
 and the set of recognised measurement values, signed by the publisher or
 by an authority the operator has chosen to trust, plus the format needed
@@ -110,7 +117,9 @@ accepts them.
    state between checks is out of scope by definition.
 2. Every catalog claim has a source URL and a date. Absence of a
    reference is recorded as "not found at `<URL>` on `<date>`", not as
-   "does not publish".
+   "does not publish". A claim nobody has checked yet is recorded as "not
+   examined", which is a statement about this project rather than about the
+   publisher, and is never written as absence.
 3. UNAVAILABLE and NOT APPLICABLE are results, not failures. A device that
    does not expose `/proc/config.gz` has not failed a config check. If the
    profile expected that interface to be closed, the check is NOT APPLICABLE
@@ -122,3 +131,26 @@ accepts them.
 5. No product is named on the page. The catalog is a table of facts
    about published references.
 6. A number that was not measured is not stated.
+7. The list of systems exists in one place, the table on the catalog page.
+   Any other list is derived from it or does not exist. A page in the
+   repository that the table does not list is not part of the catalog.
+8. This project's own system is recorded in the catalog on the same terms as
+   any other, in the same words, and is not exempt from any rule above.
+
+## What each system page records
+
+A system page is organised around the release-verification procedure rather
+than around the vendor. Six sections, each with a verdict, a source URL and a
+date:
+
+1. **Integrity.** Does the publisher assert which bytes were released.
+2. **Signature.** Is that assertion signed, and over what.
+3. **SBOM.** Is a bill of materials released with the artifacts.
+4. **Transparency log.** Is the signing event recorded in a public log.
+5. **Expected measurements.** Are boot measurements issued for the platform.
+6. **Independent rebuild.** Can a third party rebuild the artifact and compare.
+
+The first four are what a reader can check against a release today. The fifth
+is what level 2 needs and most publishers do not provide. The sixth is a
+separate layer: it does not check a release against a reference, it removes
+the need to trust the build.
