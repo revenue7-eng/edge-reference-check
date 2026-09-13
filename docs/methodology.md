@@ -128,14 +128,40 @@ accepts them.
    considers a reasonable hardened baseline for an unattended edge device
    and is marked as such. Publishers' profiles state what the publisher
    claims. The two are not confused.
-5. No product is named on the page. The catalog is a table of facts
-   about published references.
+5. No product is promoted on the page. The catalog is a table of facts
+   about published references, and this project's own system is one row in
+   it, described in the same words as the rest.
 6. A number that was not measured is not stated.
 7. The list of systems exists in one place, the table on the catalog page.
    Any other list is derived from it or does not exist. A page in the
    repository that the table does not list is not part of the catalog.
 8. This project's own system is recorded in the catalog on the same terms as
    any other, in the same words, and is not exempt from any rule above.
+
+## Two subjects, and why they never share a table
+
+This project answers two questions that look similar and are not.
+
+The first is about a device: is this running system configured the way its
+publisher says it should be. The subject is the reader's own hardware, the
+evidence is a bundle the reader collected, and the check runs in the browser.
+That is level 1.
+
+The second is about a publisher: does this publisher issue, at a stable URL,
+the things a person would need in order to check a device at all. The subject
+is a release, the evidence is what the publisher serves, and the check runs in
+a terminal. That is what the catalog records.
+
+Mixing them produces sentences that cannot be true. A column saying whether
+this project has written a profile is a fact about this project, and it has no
+business standing in a row about Canonical or Sidero. So the catalog table
+carries publisher verdicts only, and anything about profiles or about a
+particular device lives elsewhere.
+
+The catalog also holds no reference values of its own. It records that a
+publisher issues them and where; it does not copy them here. A catalog that
+redistributed other people's expected measurements would ask the reader to
+trust it as an intermediary, which is the opposite of what it is for.
 
 ## What each system page records
 

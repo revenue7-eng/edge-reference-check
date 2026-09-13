@@ -7,38 +7,51 @@ has_children: true
 
 # Catalog
 
-Which systems publish references, and at what level. One page per operating
-system. Every claim on those pages carries a source URL, the command that
-reproduces it, the output we got, and the date it was established. Every page
-ends with the history of its checks.
+What each publisher issues for its own releases, and at what level. One page per
+operating system. Every claim on those pages carries a source URL, the command
+that reproduces it, the output we got, and the date it was established. Every
+page ends with the history of its checks.
 
 A claim that says "not found" names where we looked; a claim that says "not
 examined" means nobody has looked yet, and says so rather than implying
 absence.
 
-| System and platform | L1 | Artifact identity | Signed | Expected measurements | L3 |
+| System | Platform | Artifact identity | Signed | Expected measurements | L3 |
 | --- | --- | --- | --- | --- | --- |
-| [TactiQ OS (ROCK 5A)](tactiq-os) | not yet | published | published | not yet | not yet |
-| [Talos Linux (bare metal)](talos-linux) | not yet | published | published | none to publish | none to publish |
-| [Fedora CoreOS (bare metal)](fedora-coreos) | not yet | published | published | not found | not found |
-| [Ubuntu Core (bare metal, VMs)](ubuntu-core) | not yet | published | published | not found | not found |
-| [Torizon OS (SL1680)](torizon-os) | not yet | published | not found | not found | not found |
+| [TactiQ OS](tactiq-os) | ROCK 5A | published | published | not yet | not yet |
+| [Talos Linux](talos-linux) | bare metal | published | published | none to publish | none to publish |
+| [Fedora CoreOS](fedora-coreos) | bare metal | published | published | not found | not found |
+| [Ubuntu Core](ubuntu-core) | bare metal, VMs | published | published | not found | not found |
+| [Torizon OS](torizon-os) | SL1680 | published | not found | not found | not found |
 
-The platform is in the name of the row because a reference belongs to an
-(operating system, platform) pair, not to an operating system. Boot
-measurements depend on firmware and on the boot chain, and both are
-platform-specific, so a verdict about one platform says nothing about another.
-Torizon OS is released for six platform families and one of them is checked
-here; that limit is in the row rather than in a footnote.
+The platform is a column because a reference belongs to an (operating system,
+platform) pair, not to an operating system. Boot measurements depend on
+firmware and on the boot chain, and both are platform-specific, so a verdict
+about one platform says nothing about another. Torizon OS is released for six
+platform families and one of them is checked here; the column carries that
+limit rather than a footnote.
 
 The architectures each row covers are named at the top of that system's page.
 They are not in the table because they do not change a verdict: when they do,
-the row splits and the difference shows up in the row name itself.
+the row splits and the difference appears in the platform column itself.
 
 This table carries no dates. A verdict is established per section, not per
 system: a signature can be re-checked without touching the SBOM, so one date
 per row would be wrong the moment the second check happens. Dates live next to
 the verdicts they belong to.
+
+## What this table is not
+
+It does not contain reference values. It records whether the publisher issues
+them and where, and nothing more. Copying another publisher's expected
+measurements into this repository would make this project a distributor of
+those values, and a reader would then have to trust us as an intermediary
+between them and the publisher. Avoiding exactly that is the point.
+
+It also says nothing about any particular device. Every verdict here is about
+what a publisher released, not about what a system is running. That second
+question is level 1, it is answered on the reader's own hardware, and it does
+not belong in this table.
 
 ## What the table says so far
 
@@ -61,7 +74,6 @@ is the reason this catalog exists in the form it does.
 
 ## The columns
 
-- **L1 profile**: a publisher profile exists in `profiles/`.
 - **Artifact identity**: the publisher asserts, at a stable URL, which bytes
   were released.
 - **Signed**: that assertion is signed, so it proves who produced the artefact
