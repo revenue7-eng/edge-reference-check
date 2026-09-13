@@ -18,11 +18,11 @@ absence.
 
 | System and platform | L1 | Artifact identity | Signed | Expected measurements | L3 |
 | --- | --- | --- | --- | --- | --- |
-| [TactiQ OS on ROCK 5A](tactiq-os) | not yet | published | published | not yet | not yet |
-| [Talos Linux on bare metal](talos-linux) | not yet | published | published | none to publish | none to publish |
-| [Fedora CoreOS on bare metal](fedora-coreos) | not yet | published | published | not found | not found |
-| [Ubuntu Core on bare metal and VMs](ubuntu-core) | not yet | published | published | not found | not found |
-| [Torizon OS on SL1680](torizon-os) | not yet | published | not found | not found | not found |
+| [TactiQ OS (ROCK 5A)](tactiq-os) | not yet | published | published | not yet | not yet |
+| [Talos Linux (bare metal)](talos-linux) | not yet | published | published | none to publish | none to publish |
+| [Fedora CoreOS (bare metal)](fedora-coreos) | not yet | published | published | not found | not found |
+| [Ubuntu Core (bare metal, VMs)](ubuntu-core) | not yet | published | published | not found | not found |
+| [Torizon OS (SL1680)](torizon-os) | not yet | published | not found | not found | not found |
 
 The platform is in the name of the row because a reference belongs to an
 (operating system, platform) pair, not to an operating system. Boot
