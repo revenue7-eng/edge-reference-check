@@ -16,18 +16,23 @@ A claim that says "not found" names where we looked; a claim that says "not
 examined" means nobody has looked yet, and says so rather than implying
 absence.
 
-| System | Platforms | L1 | Artifact identity | Signed | Expected measurements | L3 |
-| --- | --- | --- | --- | --- | --- | --- |
-| [TactiQ OS](tactiq-os) | Radxa ROCK 5A (RK3588S) | not yet | published | published | not yet | not yet |
-| [Talos Linux](talos-linux) | bare metal (amd64, arm64) | not yet | published | published | none to publish | none to publish |
-| [Fedora CoreOS](fedora-coreos) | bare metal (x86_64, aarch64, ppc64le, s390x) | not yet | published | published | not found | not found |
-| [Ubuntu Core](ubuntu-core) | bare metal and VM images (amd64, arm64, arm64+raspi) | not yet | published | published | not found | not found |
-| [Torizon OS](torizon-os) | Synaptics SL1680 | not yet | published | not found | not found | not found |
+| System | L1 | Artifact identity | Signed | Expected measurements | L3 |
+| --- | --- | --- | --- | --- | --- |
+| [TactiQ OS](tactiq-os) | not yet | published | published | not yet | not yet |
+| [Talos Linux](talos-linux) | not yet | published | published | none to publish | none to publish |
+| [Fedora CoreOS](fedora-coreos) | not yet | published | published | not found | not found |
+| [Ubuntu Core](ubuntu-core) | not yet | published | published | not found | not found |
+| [Torizon OS](torizon-os) | not yet | published | not found | not found | not found |
 
-This table carries no dates on purpose. A verdict is established per section,
-not per system: a signature can be re-checked without touching the SBOM, so one
-date per row would be wrong the moment the second check happens. Dates live
-next to the verdicts they belong to, on the system pages.
+References are keyed by (operating system, platform) pairs, not by operating
+system, so the pairs each verdict covers are named at the top of that system's
+page. They are not in this table because a verdict that differs between two
+platforms of the same system splits into its own page instead.
+
+This table also carries no dates. A verdict is established per section, not per
+system: a signature can be re-checked without touching the SBOM, so one date
+per row would be wrong the moment the second check happens. Dates live next to
+the verdicts they belong to.
 
 ## What the table says so far
 
@@ -75,17 +80,6 @@ is the reason this catalog exists in the form it does.
 
 A verdict is true as of its date and not after it. Publishers change what they
 release, so a verdict without a date is a claim this project cannot support.
-
-## Keying
-
-References are keyed by (operating system, platform) pairs, because boot
-measurements depend on firmware and on the boot chain. A page covers one
-operating system and lists its pairs. A pair gets its own page only when its
-verdicts diverge from the others on that page.
-
-The list of systems exists in one place: the table above. A system that is not
-in it does not exist for this catalog, whatever pages happen to be in the
-repository.
 
 ## Adding a system
 
