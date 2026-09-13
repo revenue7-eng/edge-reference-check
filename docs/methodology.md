@@ -155,6 +155,45 @@ is what level 2 needs and most publishers do not provide. The sixth is a
 separate layer: it does not check a release against a reference, it removes
 the need to trust the build.
 
+## Publishing the check itself, not only its result
+
+A verdict a reader has to take on trust is worth little on a page whose whole
+subject is not taking things on trust. So each verdict carries the command that
+produces it and the output we got, with the date.
+
+Three rules keep those blocks honest.
+
+1. **The command is pinned to a version.** A release tag, a stream and a build
+   number. Without a pin, a reader running the command later compares their
+   output against ours across two different releases and reads an ordinary
+   publisher update as a discrepancy.
+2. **The command does not depend on a rate-limited or authenticated API.** An
+   anonymous caller of a public code-hosting API is typically limited to a few
+   dozen requests an hour; past that limit the command returns an error body
+   that a reader can easily mistake for absence. Plain download URLs have no
+   such failure mode, so the check is built from those.
+3. **The command is run before it is committed.** A command that was reasoned
+   about but never executed is a guess, and a guess that prints nothing looks
+   exactly like a finding. Only commands that produced the output shown next to
+   them are published.
+
+What is published is our output, not the publisher's files. A copy of someone
+else's release artefact in this repository would be their content under their
+terms, stale within a release cycle, and no more convincing than the URL it
+came from.
+
+## Looking for the wrong shape is a finding about us
+
+A check that looks for one encoding of a property and concludes the property is
+absent has measured this project, not the publisher. The catalog has already
+recorded one such case: a signature over a checksum file was recorded as not
+found, because the check looked for `.sig`, `.asc` and `.pem`, and the
+publisher had signed with a Sigstore bundle instead.
+
+When a re-check overturns a verdict this way, the history row says what was
+looked for and what was actually there. The reader learns two things: what the
+publisher does, and how carefully this catalog looks.
+
 ## Dates, re-checks, and the history of a verdict
 
 A verdict is true as of its date and not after it. Publishers move URLs, add
@@ -172,9 +211,12 @@ the sections examined, and what came out. Two rules hold it together:
 
 1. A re-check that changes a verdict adds a history row. The previous verdict
    and the date it held are never deleted, because a reader needs to see that
-   the publisher changed, rather than being told the new state was always the
-   state.
+   the publisher changed, or that this catalog was wrong, rather than being
+   told the new state was always the state.
 2. A re-check that confirms a verdict also adds a history row. Confirmation is
    work performed and is worth as much to a reader as change; without it there
    is no way to tell a verdict that was re-examined last month from one that
    nobody has looked at since it was written.
+
+A section that was not re-examined in a pass keeps its own older date and says
+so. Re-checking one section does not refresh the others.
