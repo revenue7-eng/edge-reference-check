@@ -23,6 +23,7 @@ absence.
 | [Fedora CoreOS](fedora-coreos) | bare metal | published | published | not found | not found |
 | [Ubuntu Core](ubuntu-core) | bare metal, VMs | published | published | not found | not found |
 | [Torizon OS](torizon-os) | SL1680 | published | not found | not found | not found |
+| [Foundries.io LmP](foundries-lmp) | per-Factory | not found | not found | not found | not found |
 
 The platform is a column because a reference belongs to an (operating system,
 platform) pair, not to an operating system. Boot measurements depend on
@@ -55,14 +56,20 @@ not belong in this table.
 
 ## What the table says so far
 
-Five publishers, five different ways of asserting which bytes were released: a
-Sigstore bundle over the checksum file, a detached signature per artefact, a
-detached OpenPGP signature over the checksum file, a keyless certificate bound
-to a release workflow, and digest sidecars with no signature at all. Four of
-the five sign the assertion. One does not, and a reader who sees a directory
-full of digests can easily miss that, which is why the table separates the two.
+Six publishers. Five release a public artefact and assert which bytes it is,
+by five different mechanisms: a Sigstore bundle over the checksum file, a
+detached signature per artefact, a detached OpenPGP signature over the checksum
+file, a keyless certificate bound to a release workflow, and digest sidecars
+with no signature at all. Four of those five sign the assertion. One does not,
+and a reader who sees a directory full of digests can easily miss that, which
+is why the table separates identity from signature.
 
-On the second half of level 2 the five agree completely: not one of them issues
+The sixth releases per customer, so a person outside that relationship has
+nothing to check at all. That row is empty across the board, and it is in the
+table because this shape is common and a catalog that showed only publishers
+with something to show would misrepresent the market.
+
+On the second half of level 2 all six agree: not one of them issues
 the boot measurements a device of that platform should produce. Where the
 mechanism is documented, it computes the sealing target on the device at
 installation, or generates it per image under a key the operator or the
