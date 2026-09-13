@@ -8,15 +8,23 @@ has_children: true
 # Catalog
 
 Which systems publish references, and at what level. One page per operating
-system. Every claim on those pages has a source URL and a date. A claim that
-says "not found" names where we looked; a claim that says "not examined" means
-nobody has looked yet, and says so rather than implying absence.
+system. Every claim on those pages carries a source URL and the date it was
+established, and every page ends with the history of its checks.
 
-| System | Platforms | L1 | Artifact identity | Expected measurements | L3 | Checked |
-| --- | --- | --- | --- | --- | --- | --- |
-| [TactiQ OS](tactiq-os) | Radxa ROCK 5A (RK3588S) | not yet | not examined | not yet | not yet | 2026-09-11 |
-| [Talos Linux](talos-linux) | bare metal (amd64, arm64) | not yet | published | none to publish | none to publish | 2026-09-11 |
-| [Fedora CoreOS](fedora-coreos) | bare metal (x86_64, aarch64, ppc64le, s390x) | not yet | published | not found | not found | 2026-09-11 |
+A claim that says "not found" names where we looked; a claim that says "not
+examined" means nobody has looked yet, and says so rather than implying
+absence.
+
+| System | Platforms | L1 | Artifact identity | Expected measurements | L3 |
+| --- | --- | --- | --- | --- | --- |
+| [TactiQ OS](tactiq-os) | Radxa ROCK 5A (RK3588S) | not yet | not examined | not yet | not yet |
+| [Talos Linux](talos-linux) | bare metal (amd64, arm64) | not yet | published | none to publish | none to publish |
+| [Fedora CoreOS](fedora-coreos) | bare metal (x86_64, aarch64, ppc64le, s390x) | not yet | published | not found | not found |
+
+This table carries no dates on purpose. A verdict is established per section,
+not per system: a signature can be re-checked without touching the SBOM, so one
+date per row would be wrong the moment the second check happens. Dates live
+next to the verdicts they belong to, on the system pages.
 
 ## The columns
 
@@ -34,11 +42,14 @@ nobody has looked yet, and says so rather than implying absence.
 
 | Verdict | Means |
 | --- | --- |
-| `published` | Found at a stable URL of the publisher, on the date in the row. |
-| `not found` | Looked at named URLs on the date in the row, did not find it. |
+| `published` | Found at a stable URL of the publisher, on the date recorded with the verdict. |
+| `not found` | Looked at named URLs on that date, did not find it. |
 | `not examined` | Nobody has looked yet. Not a statement about the publisher. |
-| `none to publish` | The mechanism leaves the publisher nothing to issue. This is a classification made by this project; the observation it rests on is on the system's page. |
+| `none to publish` | The mechanism leaves the publisher nothing to issue. This is a classification made by this project; the observation it rests on is in the section. |
 | `not yet` | This project's own system, work not done. |
+
+A verdict is true as of its date and not after it. Publishers change what they
+release, so a verdict without a date is a claim this project cannot support.
 
 ## Keying
 

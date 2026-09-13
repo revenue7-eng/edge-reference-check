@@ -8,7 +8,7 @@ l1: not yet
 l2_identity: published
 l2_measurements: none to publish
 l3: none to publish
-checked: 2026-09-11
+last_checked: 2026-09-11
 ---
 
 # Talos Linux
@@ -18,19 +18,26 @@ two architectures share every verdict below, so they share a page.
 
 ## Integrity
 
-`published`. Release assets include `sha256sum.txt`, covering the ISO, the raw
-images and the unified kernel images.
+`published`, established 2026-09-11. Release assets include `sha256sum.txt`,
+covering the ISO, the raw images and the unified kernel images.
+
+Source: <https://github.com/siderolabs/talos/releases>
 
 ## Signature
 
-`not found`. A signature over `sha256sum.txt` itself was not found at the
-release page on 2026-09-11. Container images are signed with cosign, which
-covers a different set of artifacts than the ones a bare-metal installer
-consumes.
+`not found`, established 2026-09-11. A signature over `sha256sum.txt` itself
+was not found at the release page on that date. Container images are signed
+with cosign, which covers a different set of artifacts than the ones a
+bare-metal installer consumes.
+
+Source: <https://github.com/siderolabs/talos/releases>
 
 ## SBOM
 
-`published`. SPDX SBOMs are included in the release assets.
+`published`, established 2026-09-11. SPDX SBOMs are included in the release
+assets.
+
+Source: <https://github.com/siderolabs/talos/releases>
 
 ## Transparency log
 
@@ -38,22 +45,25 @@ consumes.
 
 ## Expected measurements
 
-`none to publish`. Expected measurements are generated per unified kernel
-image, signed with a PCR signing key held by the operator, and consumed only by
-the TPM unlock policy. In the SecureBoot flow there is therefore nothing for
-the publisher to issue: the values exist, but they are produced on the
-operator's side and bound to the operator's key.
+`none to publish`, established 2026-09-11. Expected measurements are generated
+per unified kernel image, signed with a PCR signing key held by the operator,
+and consumed only by the TPM unlock policy. In the SecureBoot flow there is
+therefore nothing for the publisher to issue: the values exist, but they are
+produced on the operator's side and bound to the operator's key.
 
 This is not the same as withholding. It is a design in which the reference is
 operator-produced by construction, which the methodology explicitly allows and
 which this catalog does not record, because this catalog records publisher
 references.
 
+Source: <https://docs.siderolabs.com/talos/v1.12/platform-specific-installations/bare-metal-platforms/secureboot>
+
 ## Independent rebuild
 
 `not examined`.
 
-## Sources
+## Check history
 
-- <https://github.com/siderolabs/talos/releases>, checked 2026-09-11.
-- <https://docs.siderolabs.com/talos/v1.12/platform-specific-installations/bare-metal-platforms/secureboot>, checked 2026-09-11.
+| Date | What was checked | Result |
+| --- | --- | --- |
+| 2026-09-11 | Integrity, signature, SBOM, expected measurements | First pass; signature over the checksum file not found |

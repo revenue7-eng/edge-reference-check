@@ -115,11 +115,11 @@ accepts them.
 1. No backend, no storage, no accounts, no history. Everything runs in
    the browser and is gone when the tab closes. Anything that requires
    state between checks is out of scope by definition.
-2. Every catalog claim has a source URL and a date. Absence of a
-   reference is recorded as "not found at `<URL>` on `<date>`", not as
-   "does not publish". A claim nobody has checked yet is recorded as "not
-   examined", which is a statement about this project rather than about the
-   publisher, and is never written as absence.
+2. Every catalog claim has a source URL and the date it was established.
+   Absence of a reference is recorded as "not found at `<URL>` on `<date>`",
+   not as "does not publish". A claim nobody has checked yet is recorded as
+   "not examined", which is a statement about this project rather than about
+   the publisher, and is never written as absence.
 3. UNAVAILABLE and NOT APPLICABLE are results, not failures. A device that
    does not expose `/proc/config.gz` has not failed a config check. If the
    profile expected that interface to be closed, the check is NOT APPLICABLE
@@ -140,8 +140,8 @@ accepts them.
 ## What each system page records
 
 A system page is organised around the release-verification procedure rather
-than around the vendor. Six sections, each with a verdict, a source URL and a
-date:
+than around the vendor. Six sections, each with a verdict, a source URL and the
+date the verdict was established:
 
 1. **Integrity.** Does the publisher assert which bytes were released.
 2. **Signature.** Is that assertion signed, and over what.
@@ -154,3 +154,27 @@ The first four are what a reader can check against a release today. The fifth
 is what level 2 needs and most publishers do not provide. The sixth is a
 separate layer: it does not check a release against a reference, it removes
 the need to trust the build.
+
+## Dates, re-checks, and the history of a verdict
+
+A verdict is true as of its date and not after it. Publishers move URLs, add
+signatures, drop formats and change flows, so a catalog that states verdicts
+without dates states things it cannot support.
+
+Dates are therefore recorded per section, not per system. A signature can be
+re-examined without touching the SBOM, and when that happens only that section
+moves. One date for a whole system would be wrong from the second check
+onward, which is why the catalog table carries no date column at all and
+points at the pages instead.
+
+Every system page ends with a check history: one row per pass, with the date,
+the sections examined, and what came out. Two rules hold it together:
+
+1. A re-check that changes a verdict adds a history row. The previous verdict
+   and the date it held are never deleted, because a reader needs to see that
+   the publisher changed, rather than being told the new state was always the
+   state.
+2. A re-check that confirms a verdict also adds a history row. Confirmation is
+   work performed and is worth as much to a reader as change; without it there
+   is no way to tell a verdict that was re-examined last month from one that
+   nobody has looked at since it was written.

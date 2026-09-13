@@ -8,7 +8,7 @@ l1: not yet
 l2_identity: not examined
 l2_measurements: not yet
 l3: not yet
-checked: 2026-09-11
+last_checked: 2026-09-11
 ---
 
 # TactiQ OS
@@ -23,7 +23,7 @@ that is the accurate state.
 ## Integrity
 
 `not examined`. The release artifacts of this system have not been checked
-against this catalog's own procedure. Until they are, this row says nothing
+against this catalog's own procedure. Until they are, this section says nothing
 about them in either direction.
 
 ## Signature
@@ -40,15 +40,19 @@ about them in either direction.
 
 ## Expected measurements
 
-`not yet`. The measured boot chain is not closed on this platform: as of
-2026-09-11 there is no device-mapper target in the boot chain, so there are no
-measurements to issue a reference for. The envelope producer is public and
-alpha.
+`not yet`, established 2026-09-11. The measured boot chain is not closed on
+this platform: on that date there was no device-mapper target in the boot
+chain, so there were no measurements to issue a reference for. The envelope
+producer is public and alpha.
+
+Source: <https://github.com/revenue7-eng/tactiq-attest>
 
 ## Independent rebuild
 
 `not examined`.
 
-## Sources
+## Check history
 
-- <https://github.com/revenue7-eng/tactiq-attest>, checked 2026-09-11.
+| Date | What was checked | Result |
+| --- | --- | --- |
+| 2026-09-11 | Expected measurements | `not yet`, boot chain not closed on this platform |
