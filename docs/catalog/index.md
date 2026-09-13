@@ -23,8 +23,8 @@ absence.
 | [Fedora CoreOS](fedora-coreos) | bare metal | published | published | not found | not found |
 | [Ubuntu Core](ubuntu-core) | bare metal, VMs | published | published | not found | not found |
 | [Torizon OS](torizon-os) | SL1680 | published | not found | not found | not found |
-| [Foundries.io LmP](foundries-lmp) | per-Factory | not found | not found | not found | not found |
-| [Wind River Linux](wind-river-linux) | no public release | not found | not found | not found | not found |
+| [Foundries.io LmP](foundries-lmp) | none published | not found | not found | not found | not found |
+| [Wind River Linux](wind-river-linux) | none published | not found | not found | not found | not found |
 
 The platform is a column because a reference belongs to an (operating system,
 platform) pair, not to an operating system. Boot measurements depend on
@@ -36,6 +36,12 @@ limit rather than a footnote.
 The architectures each row covers are named at the top of that system's page.
 They are not in the table because they do not change a verdict: when they do,
 the row splits and the difference appears in the platform column itself.
+
+Two rows say `none published` instead of naming a platform. That is not a
+statement about hardware support, which in both cases is extensive: it means no
+release artefact exists outside a commercial relationship, so there is no pair
+to name. What closes the door differs between the two and is described on their
+pages.
 
 This table carries no dates. A verdict is established per section, not per
 system: a signature can be re-checked without touching the SBOM, so one date
