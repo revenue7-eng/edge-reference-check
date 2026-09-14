@@ -8,7 +8,7 @@ l1: not yet
 l2_identity: published
 l2_measurements: not yet
 l3: not yet
-last_checked: 2026-09-13
+last_checked: 2026-09-14
 ---
 
 # TactiQ OS
@@ -20,7 +20,10 @@ terms as any other, is described in the same words, and is not marked up for
 being ours. Two of the sections below record defects found while running this
 catalog's own procedure against our own release.
 
-Verdicts were established against release `v2.1.0-rc7`.
+Verdicts were established against release `v2.1.0-rc7`. Both defects have
+since been addressed in the source tree, and neither fix changes the assets
+of `v2.1.0-rc7`: published artefacts are never replaced after the fact, so
+the commands on this page keep reproducing what a reader downloads today.
 
 ## How to find the release at all
 
@@ -36,6 +39,13 @@ Our output, 2026-09-13: the redirect goes to `/releases`, not to a tag. Tags
 have to be read from the list instead, and the most recent is `v2.1.0-rc7`.
 This is a defect in how this system publishes, recorded here rather than
 quietly worked around.
+
+Addressed 2026-09-14, and the behaviour is unchanged: the publisher's README
+now states that `latest` is not used while every release is a candidate, that
+verification addresses a named tag, and that the rule is lifted at general
+availability. What changed is that a reader arriving at an empty `latest` can
+now find out why from the publisher rather than from us. The empty redirect
+itself stands until a release that is not a candidate is published.
 
 ## Integrity
 
@@ -88,6 +98,15 @@ URI:https://github.com/revenue7-eng/tactiq-os/.github/workflows/release-sign.yml
 issuer=O = sigstore.dev, CN = sigstore-intermediate
 Verified OK
 ```
+
+Fixed forward 2026-09-14. The signing workflow now normalises the certificate
+to PEM after signing, and the `openssl` check that was supposed to catch this
+no longer swallows its own failure, so an unparsable certificate fails the run
+before the asset is uploaded. The defect was invisible inside the workflow
+because `cosign` reads its own output back in either form; only a consumer
+using plain `openssl` hit it. The fix applies from the next tag onwards. The
+`v2.1.0-rc7` asset is not re-uploaded, so the decode step above stays in the
+commands for as long as this page is keyed to that tag.
 
 The certificate is valid for ten minutes (notBefore 2026-08-08 07:49:52 UTC,
 notAfter 07:59:52 UTC). That is the point of keyless signing: there is no
@@ -166,3 +185,4 @@ six that no publisher in this catalog has closed.
 | --- | --- | --- |
 | 2026-09-11 | Expected measurements | `not yet`, boot chain not closed on this platform |
 | 2026-09-13 | Integrity, signature, SBOM, transparency log, against `v2.1.0-rc7` | All four `published`. Two defects recorded: no release is marked latest, and the certificate is published base64-encoded rather than as PEM |
+| 2026-09-14 | Both defects, in the publisher's tree | Both addressed, verdicts unchanged. The certificate is normalised to PEM from the next tag onwards, and the empty `latest` is now declared in the publisher's README instead of being undocumented. The `v2.1.0-rc7` assets are untouched, so every command on this page still reproduces as written |
