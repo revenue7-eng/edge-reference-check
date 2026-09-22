@@ -18,7 +18,7 @@ absence.
 
 | System | Platform | Artifact identity | Signed | Expected measurements | L3 |
 | --- | --- | --- | --- | --- | --- |
-| [TactiQ OS](tactiq-os) | ROCK 5A | published | published | not yet | not yet |
+| [TactiQ OS](tactiq-os) | ROCK 5A | published | published | published | not yet |
 | [Talos Linux](talos-linux) | bare metal | published | published | none to publish | none to publish |
 | [Fedora CoreOS](fedora-coreos) | bare metal | published | published | not found | not found |
 | [Ubuntu Core](ubuntu-core) | bare metal, VMs | published | published | not found | not found |
