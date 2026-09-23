@@ -71,6 +71,8 @@
   .topbar div { max-width: 72ch; margin: 0 auto; padding: .7rem 1.25rem; display: flex; gap: 1.25rem; font-size: .9rem; }
   .topbar a { color: var(--muted); text-decoration: none; }
   .topbar a:hover { color: var(--ink); text-decoration: underline; }
+  .l3in { display: flex; flex-direction: column; gap: .5rem; margin-top: .5rem; }
+  .NOTASSESSED, .NOTRUN { color: var(--na); }
 </style>
 </head>
 <body>
@@ -124,6 +126,46 @@
       <tbody></tbody>
     </table></div>
     <p class="hint" style="margin-top:1rem">This is level 1: configuration as the system reported it. The bundle is not signed, so a system that has been tampered with can report anything. UNAVAILABLE means the device did not expose that fact and the check could not run. NOT APPLICABLE means the profile expects that interface to be closed on this kind of system, which is a hardening decision rather than a gap. Neither is a failure.</p>
+  </section>
+
+  <h2 id="level3">Level 3: a signed envelope against a signed reference set</h2>
+  <p>Level 3 needs two things from two different parties. From the publisher: a reference set and its signature. From the device: an attestation envelope, its signature, and the device's public key. The page checks the reference set's signature against a root certificate you have pinned yourself, then checks the envelope's signature with the device key, then whether the attested state is one the reference set recognises.</p>
+  <p class="hint">Formats this page reads: reference sets in <code>tactiq-rim/1</code> with a detached CMS signature; envelopes in the 93-byte <code>attest-envelope</code> layout signed with ECDSA P-256. The envelope check is the publisher's open crate <code>attest-appraise</code>, compiled to WebAssembly from a pinned commit; the build is reproducible, see <code>wasm/build.sh</code> in this repository. A system that publishes another format is recorded in the catalog as such; this page does not read it yet.</p>
+
+  <h2>4. Reference set</h2>
+  <div class="l3in">
+    <span class="filebtn"><input type="file" id="l3_rim" class="hidden" accept=".json,application/json" tabindex="-1"><button type="button" data-for="l3_rim">Reference set (.json)</button><span class="fname" id="l3_rim_n">no file loaded</span></span>
+    <span class="filebtn"><input type="file" id="l3_p7s" class="hidden" accept=".p7s" tabindex="-1"><button type="button" data-for="l3_p7s">Its signature (.p7s)</button><span class="fname" id="l3_p7s_n">no file loaded</span></span>
+    <span class="filebtn"><input type="file" id="l3_root" class="hidden" accept=".pem,.crt" tabindex="-1"><button type="button" data-for="l3_root">Root you trust (PEM)</button><span class="fname" id="l3_root_n">no file loaded</span></span>
+  </div>
+  <p class="hint">The root is yours to choose and pin. The page shows the SHA-256 of its public key after the check; compare it with the value the publisher states through a channel you trust. A reference set carries its own idea of its root, and that is exactly the value a forger would also write, so the page does not use it.</p>
+
+  <h2>5. Envelope</h2>
+  <div class="l3in">
+    <span class="filebtn"><input type="file" id="l3_msg" class="hidden" tabindex="-1"><button type="button" data-for="l3_msg">Envelope (.msg)</button><span class="fname" id="l3_msg_n">no file loaded</span></span>
+    <span class="filebtn"><input type="file" id="l3_sig" class="hidden" tabindex="-1"><button type="button" data-for="l3_sig">Envelope signature (.sig)</button><span class="fname" id="l3_sig_n">no file loaded</span></span>
+    <span class="filebtn"><input type="file" id="l3_key" class="hidden" accept=".pem" tabindex="-1"><button type="button" data-for="l3_key">Device public key (PEM)</button><span class="fname" id="l3_key_n">no file loaded</span></span>
+    <span class="filebtn"><input type="file" id="l3_ev" class="hidden" tabindex="-1"><button type="button" data-for="l3_ev">Evidence bundle (optional)</button><span class="fname" id="l3_ev_n">none: an empty bundle is assumed</span></span>
+  </div>
+
+  <div class="row" style="margin-top:1.5rem">
+    <button id="l3run" type="button">Check envelope</button>
+    <span id="l3msg" class="hint" aria-live="polite" style="flex:1 1 12rem"></span>
+  </div>
+
+  <section id="l3out" hidden>
+    <h2>6. Result</h2>
+    <div class="summary" id="l3summary"></div>
+    <div class="wrap"><table id="l3tbl">
+      <thead><tr><th>Status</th><th>Step</th><th>Detail</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+    <dl class="facts" id="l3facts"></dl>
+    <div id="l3disc" hidden>
+      <p style="margin-top:1rem"><strong>The reference set states what its values do not cover:</strong></p>
+      <ul id="l3disclist" class="hint"></ul>
+    </div>
+    <p class="hint" style="margin-top:1rem">OK here means: the reference set was signed under the root you pinned, the envelope was signed by the key you supplied, the evidence bundle is the one that was signed over, and the attested state is one the reference set recognises. It does not mean the envelope is the device's latest: that needs a record of the previous check, and this page keeps nothing. The counter is shown so that you can compare it yourself. Whether the key you supplied belongs to the device you think it does is outside the envelope and outside this page.</p>
   </section>
 
   <footer>
@@ -501,6 +543,132 @@
     });
     out.hidden = false; msg.textContent = '';
     out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+})();
+</script>
+<script src="assets/l3/rim-sig.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var files = {};
+  var ids = ['l3_rim', 'l3_p7s', 'l3_root', 'l3_msg', 'l3_sig', 'l3_key', 'l3_ev'];
+
+  Array.prototype.forEach.call(document.querySelectorAll('.l3in button[data-for]'), function (b) {
+    b.addEventListener('click', function () { $(b.getAttribute('data-for')).click(); });
+  });
+  ids.forEach(function (id) {
+    $(id).addEventListener('change', function (e) {
+      var f = e.target.files[0]; if (!f) return;
+      f.arrayBuffer().then(function (ab) {
+        files[id] = new Uint8Array(ab);
+        $(id + '_n').textContent = f.name + ' (' + ab.byteLength + ' bytes)';
+      });
+    });
+  });
+
+  // Codes returned by erc_check (wasm/src/lib.rs).
+  var STEPS = ['Reference set signature', 'Reference set readable', 'Envelope signature', 'Evidence bundle bound to the envelope', 'Attested state in the reference set', 'Evidence the reference set requires', 'Freshness'];
+  var CODE = {
+    0: [5, null, 'Accepted'],
+    1: [2, 'FAIL', 'the signature does not verify under the supplied key'],
+    3: [2, 'FAIL', 'the envelope is not a well-formed attest-envelope'],
+    4: [3, 'FAIL', 'the evidence bundle is not the one the envelope was signed over'],
+    5: [4, 'FAIL', 'the attested selection and composite are not in the reference set'],
+    6: [5, 'FAIL', 'the evidence bundle cannot be parsed'],
+    7: [5, 'FAIL', 'a source the reference set requires is missing from the bundle'],
+    8: [5, 'FAIL', 'an evidence source did not match its reference'],
+    100: [2, 'UNAVAILABLE', 'the device key is not a P-256 public key in PEM'],
+    101: [1, 'FAIL', 'the reference set is not UTF-8'],
+    102: [1, 'FAIL', 'the reference set cannot be read']
+  };
+
+  var wasmP = null;
+  function wasm() {
+    if (!wasmP) wasmP = fetch('assets/l3/erc_level3.wasm').then(function (r) {
+      if (!r.ok) throw new Error('could not load the checker: HTTP ' + r.status);
+      return r.arrayBuffer();
+    }).then(function (b) { return WebAssembly.instantiate(b); }).then(function (m) { return m.instance.exports; });
+    return wasmP;
+  }
+  function pemBody(bytes, label) {
+    var t = new TextDecoder().decode(bytes);
+    var m = new RegExp('-----BEGIN ' + label + '-----([\\s\\S]*?)-----END ' + label + '-----').exec(t);
+    if (!m) return null;
+    var bin = atob(m[1].replace(/\s+/g, '')), out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function hex(b) { return Array.prototype.map.call(b, function (x) { return (x < 16 ? '0' : '') + x.toString(16); }).join(''); }
+  function row(status, step, detail) {
+    var tr = document.createElement('tr'), a = document.createElement('td'), b = document.createElement('td'), c = document.createElement('td');
+    a.className = 'st ' + status.replace(/ /g, ''); a.textContent = status; b.textContent = step; c.textContent = detail || '';
+    tr.appendChild(a); tr.appendChild(b); tr.appendChild(c); $('l3tbl').tBodies[0].appendChild(tr);
+  }
+  function fact(k, v) {
+    var dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = k; dd.textContent = v;
+    $('l3facts').appendChild(dt); $('l3facts').appendChild(dd);
+  }
+
+  $('l3run').addEventListener('click', function () {
+    var need = { l3_rim: 'reference set', l3_p7s: 'its signature', l3_root: 'root', l3_msg: 'envelope', l3_sig: 'envelope signature', l3_key: 'device key' };
+    var missing = Object.keys(need).filter(function (k) { return !files[k]; }).map(function (k) { return need[k]; });
+    var m = $('l3msg');
+    if (missing.length) { m.className = 'hint err'; m.textContent = 'Missing: ' + missing.join(', ') + '.'; return; }
+    m.className = 'hint'; m.textContent = '';
+    $('l3tbl').tBodies[0].innerHTML = ''; $('l3facts').innerHTML = ''; $('l3disclist').innerHTML = ''; $('l3disc').hidden = true;
+    var rootPem = new TextDecoder().decode(files.l3_root);
+
+    ERCRimSig.verify(files.l3_rim, files.l3_p7s, rootPem).then(function (r) {
+      var cur = r.validity.every(function (v) { return v.current; });
+      row('OK', STEPS[0], 'signed under the pinned root; its public key SHA-256 is ' + r.rootSpkiSha256 +
+        (cur ? '' : '. Note: at least one certificate in the chain is outside its validity period by this computer\'s clock'));
+      return wasm().then(function (w) { return { w: w, sig: r }; });
+    }, function (e) {
+      var st = e && e.unsupported ? 'UNAVAILABLE' : 'FAIL';
+      row(st, STEPS[0], e && e.step ? e.step + ': ' + e.detail : String(e));
+      for (var i = 1; i < STEPS.length; i++) row('NOT RUN', STEPS[i], 'the reference set is not authenticated');
+      throw null;
+    }).then(function (ctx) {
+      var w = ctx.w, key = pemBody(files.l3_key, 'PUBLIC KEY') || new Uint8Array(0);
+      var ev = files.l3_ev || new Uint8Array(0);
+      var bufs = [files.l3_msg, files.l3_sig, ev, key, files.l3_rim], args = [], ptrs = [];
+      bufs.forEach(function (b) {
+        var p = w.erc_alloc(b.length); new Uint8Array(w.memory.buffer, p, b.length).set(b);
+        args.push(p, b.length); ptrs.push([p, b.length]);
+      });
+      var code = w.erc_check.apply(null, args);
+      var detail = new TextDecoder().decode(new Uint8Array(w.memory.buffer, w.erc_detail_ptr(), w.erc_detail_len()));
+      ptrs.forEach(function (p) { w.erc_free(p[0], p[1]); });
+      var c = CODE[code] || [2, 'FAIL', 'unexpected result code ' + code];
+      var failedAt = code === 0 ? STEPS.length : c[0];
+      for (var i = 1; i < STEPS.length - 1; i++) {
+        if (i < failedAt) row('OK', STEPS[i], '');
+        else if (i === failedAt) row(c[1], STEPS[i], c[2] + (code >= 100 || code === 3 ? ' (' + detail + ')' : ''));
+        else row('NOT RUN', STEPS[i], 'an earlier step did not hold');
+      }
+      var msg = files.l3_msg, authentic = code === 0 || code >= 4 && code < 100;
+      if (authentic) {
+        var counter = 0n; for (var j = 16; j < 24; j++) counter = counter * 256n + BigInt(msg[j]);
+        row('NOT ASSESSED', STEPS[6], 'counter ' + counter + '. Whether this is the latest envelope is not judged here');
+        fact('Device', new TextDecoder().decode(msg.subarray(0, 16)).replace(/\0+$/, ''));
+        fact('Counter', String(counter));
+        fact('Selection', hex(msg.subarray(24, 29)));
+        fact('Composite', hex(msg.subarray(29, 61)));
+      } else {
+        row('NOT RUN', STEPS[6], 'the envelope is not authenticated');
+      }
+      try {
+        var rim = JSON.parse(new TextDecoder().decode(files.l3_rim));
+        if (rim.identity && rim.identity.fields) Object.keys(rim.identity.fields).forEach(function (k) { fact(k, String(rim.identity.fields[k])); });
+        (rim.disclosures || []).forEach(function (d) { var li = document.createElement('li'); li.textContent = d; $('l3disclist').appendChild(li); });
+        $('l3disc').hidden = !(rim.disclosures || []).length;
+      } catch (e) { /* already reported by step 2 */ }
+      $('l3summary').textContent = code === 0 ? 'Accepted: every step that this page can judge holds.' : 'Not accepted: see the first step that did not hold.';
+    }).catch(function (e) {
+      if (e !== null) { m.className = 'hint err'; m.textContent = String(e && e.message || e); }
+      if (e === null) $('l3summary').textContent = 'Not accepted: the reference set did not verify.';
+    }).then(function () { $('l3out').hidden = false; });
   });
 })();
 </script>

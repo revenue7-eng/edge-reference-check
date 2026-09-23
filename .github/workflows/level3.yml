@@ -1,0 +1,25 @@
+name: level3
+
+on:
+  push:
+    branches: [main]
+    paths: ['wasm/**', 'docs/assets/l3/**', 'docs/check.html', '.github/workflows/level3.yml']
+  pull_request:
+    paths: ['wasm/**', 'docs/assets/l3/**', 'docs/check.html', '.github/workflows/level3.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  reproduce-and-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      # rust-toolchain.toml in wasm/ selects the pinned compiler and target.
+      - name: Rebuild the checker and compare with the committed file
+        run: ./wasm/build.sh --check
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Level 3 against synthetic material
+        run: node wasm/test/l3.test.mjs
