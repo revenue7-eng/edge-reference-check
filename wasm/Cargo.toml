@@ -1,0 +1,27 @@
+[package]
+name = "erc-level3"
+version = "0.1.0"
+edition = "2021"
+publish = false
+license = "Apache-2.0"
+description = "Level 3 adapter for check.html: one attest-envelope against one tactiq-rim/1 reference set"
+
+[lib]
+crate-type = ["cdylib"]
+path = "src/lib.rs"
+
+# The check itself is the publisher's open crate, pinned to one commit. The pin is
+# the whole point: a reader rebuilds from this revision and compares bytes with
+# docs/assets/l3/erc_level3.wasm (see build.sh). Moving it is a reviewed change.
+[dependencies]
+attest-appraise = { git = "https://github.com/revenue7-eng/tactiq-attest", rev = "dc8eb1fba44af2768872b613603ca1d76613ae2a" }
+# pkcs8 for reading the device key as SubjectPublicKeyInfo. No default features:
+# the default pulls getrandom, which does not build for wasm32-unknown-unknown.
+p256 = { version = "0.13", default-features = false, features = ["ecdsa", "pkcs8"] }
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

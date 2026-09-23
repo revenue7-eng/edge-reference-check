@@ -41,6 +41,15 @@ counter-based protocol decides freshness by comparing the counter with a
 high-water mark persisted from the previous check. This page persists
 nothing, by rule. It shows the counter value and says so.
 
+The envelope check on this page is compiled from the publisher's open crate,
+pinned to one commit in `wasm/Cargo.toml`, and the compiled file is reproducible
+from that source: `wasm/build.sh --check` rebuilds it and compares bytes, and
+runs on every change to it. Checking a publisher's output with the publisher's
+code is acceptable only on those terms: the code is open, the version is fixed,
+and anyone can rebuild the bytes the page runs. The signature on the reference
+set is checked by this project's own code, with the browser's WebCrypto, against
+a root the reader pins.
+
 ## Two kinds of observability, and why hardening removes only one
 
 A system can be observed in two quite different ways, and the difference
