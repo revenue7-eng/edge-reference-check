@@ -7,8 +7,8 @@ platforms: Radxa ROCK 5A (RK3588S)
 l1: not yet
 l2_identity: published
 l2_measurements: published
-l3: not yet
-last_checked: 2026-09-22
+l3: published
+last_checked: 2026-09-28
 ---
 
 # TactiQ OS
@@ -20,7 +20,8 @@ terms as any other, is described in the same words, and is not marked up for
 being ours. Two of the sections below record defects found while running this
 catalog's own procedure against our own release.
 
-Verdicts were established against release `v2.1.0-rc11`. The page was keyed to
+Verdicts were established against release `v2.1.0-rc11`, except the L3
+verdict, which was established against `v2.1.0-rc13` on 2026-09-28. The page was keyed to
 `v2.1.0-rc10` until 2026-09-22. What changed with the newer release is the
 Expected measurements column: the publisher now issues the boot measurements a
 device of this platform is expected to produce, together with the inputs and
@@ -243,20 +244,39 @@ Source: <https://github.com/revenue7-eng/tactiq-os/releases/tag/v2.1.0-rc11>
 
 ## L3 reference set
 
-`not yet`, established 2026-09-22. Level 3 asks for two things: a signed
-reference set in a documented format, and a way for the device to produce a
-signed attestation envelope that a reader can check against it. The first half
-now exists in substance, since the reference ships inside the set covered by
-`SHA256SUMS` and therefore by the release signature, and its format is carried
-in the file itself and in the program that writes it. The second half does not:
-no device of this platform produces a signed quote yet. The publisher's own
-coverage manifest for this release says the same, and keeps the corresponding
-row at `planned`.
+`published`, established 2026-09-28 against release `v2.1.0-rc13`. Both halves
+now exist. The reference set is the signed reference integrity manifest of the
+release (`rim-rock5a.json` with `rim-rock5a.json.p7s`), which verifies to the
+publisher's release root. The device half is attached to the same release as
+`l3-evidence-rc13.tar.gz`: two TPM quotes from one board running the release,
+the public part of the attestation key that signed them, the endorsement key
+certificate of the board's TPM, and a registration record, signed by a separate
+leaf under the same root, that binds the attestation key to that endorsement
+key. The release also carries `VERIFY-L3-rc13.md`, a procedure that uses
+OpenSSL, tpm2-tools and Python and no software of the publisher.
 
-This verdict moves when a device produces an envelope and a reader can check it
-against the published reference without going through us.
+We ran that procedure on 2026-09-28 in a clean directory, from the release
+assets and the archive. Every check passed. The endorsement key certificate
+chains to Infineon's root; the attestation key in the archive is the one named
+in the signed record; both quotes verify under it; and the attested digest of
+PCR 0 to 9 equals the one recomputed from the signed reference set for slot A.
+A record with one byte changed was rejected. Infineon's server could not be
+reached from our network during the run, so the copies of Infineon's CA
+certificates in the archive were used and pinned by fingerprint.
 
-Source: <https://github.com/revenue7-eng/tactiq-attest>
+What this verdict does not cover, taken from the publisher's own procedure. The
+attestation key was registered by the publisher on its own bench, under a
+development image, and a reader cannot replay that registration. The quotes
+carry no challenge of the reader's, so freshness is not shown, which this page
+does not adjudicate in any case. Revocation of the endorsement key certificate
+was not checked. The evidence covers one board. The coverage manifest of
+`v2.1.0-rc13` still lists the corresponding row as `planned`, because it was
+signed before the evidence existed; the release notes say so.
+
+The in-browser check on this site was not run against this evidence. Whether it
+accepts the envelope format of this release is not examined.
+
+Source: <https://github.com/revenue7-eng/tactiq-os/releases/tag/v2.1.0-rc13>
 
 ## Independent rebuild
 
@@ -275,3 +295,4 @@ six that no publisher in this catalog has closed.
 | 2026-09-22 | Integrity, signature, SBOM, transparency log, re-run against `v2.1.0-rc11`, and the page re-keyed to that tag | All four `published`, verdicts unchanged. Twenty artefacts against thirteen in `v2.1.0-rc10`. `latest` still redirects to the release list, observed against a third tag |
 | 2026-09-22 | Expected measurements, against the release only | `published`. The release carries `pcr-reference-rock5a.json` with the five inputs and the program that derive it; recomputed from the downloaded files, byte-identical to the published reference |
 | 2026-09-22 | L3 reference set | `not yet`. The reference set is published and signed, but no device produces a signed attestation envelope to check against it |
+| 2026-09-28 | L3 reference set, against `v2.1.0-rc13` | `published`. The publisher's procedure `VERIFY-L3-rc13.md` run in a clean directory from the release assets and `l3-evidence-rc13.tar.gz`: every check passed, a tampered record was rejected. Infineon's server was unreachable from our network, so the archive copies of its CA certificates were used, pinned by fingerprint. The in-browser check was not run |
