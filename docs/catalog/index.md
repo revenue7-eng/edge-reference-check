@@ -80,15 +80,20 @@ per-customer factories, the other used to serve prebuilt binaries from a public
 page that now forwards to marketing. For both, every public repository of every
 public organisation was enumerated before the row was written.
 
-On the second half of level 2 all seven agree: not one of them issues
-the boot measurements a device of that platform should produce. Where the
-mechanism is documented, it computes the sealing target on the device at
-installation, or generates it per image under a key the operator or the
-customer holds.
+On the second half of level 2, six of the seven do not issue the boot
+measurements a device of that platform should produce. Where the mechanism is
+documented, it computes the sealing target on the device at installation, or
+generates it per image under a key the operator or the customer holds. The
+seventh is TactiQ OS, the system this project's authors build. Its row is
+filled from its own releases under the same rules as every other row, and the
+check history on its page shows when each verdict changed.
 
 So the column that decides whether a person can check a running system against
-its publisher is empty across the entire catalog. That is the finding, and it
-is the reason this catalog exists in the form it does.
+its publisher is empty for every system in the catalog except the one its
+authors build. That is still the finding. A reader should weigh it
+accordingly: a catalog whose only filled row belongs to its authors is a weaker
+witness than one where their own row is empty. What makes it testable is that
+every `not found` on the other pages says where we looked.
 
 ## The columns
 
@@ -100,7 +105,7 @@ is the reason this catalog exists in the form it does.
 - **Expected measurements**: the publisher issues the boot measurements a
   device of this platform should produce. This is the second half of level 2,
   and it is recorded separately because a publisher can do the first without
-  the second, and all five here do exactly that.
+  the second, and four of the five here do exactly that.
 - **L3 reference set**: a signed reference set with a documented format, plus
   a way for the device to produce a signed attestation envelope.
 
