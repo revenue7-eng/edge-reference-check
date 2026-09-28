@@ -5,7 +5,7 @@ version = 4
 [[package]]
 name = "attest-appraise"
 version = "0.1.0"
-source = "git+https://github.com/revenue7-eng/tactiq-attest?rev=dc8eb1fba44af2768872b613603ca1d76613ae2a#dc8eb1fba44af2768872b613603ca1d76613ae2a"
+source = "git+https://github.com/revenue7-eng/tactiq-attest?rev=88930346c7f9f4120a636dc73739a66198fd81ab#88930346c7f9f4120a636dc73739a66198fd81ab"
 dependencies = [
  "attest-envelope",
  "p256",
@@ -15,8 +15,8 @@ dependencies = [
 
 [[package]]
 name = "attest-envelope"
-version = "0.1.0"
-source = "git+https://github.com/revenue7-eng/tactiq-attest?rev=dc8eb1fba44af2768872b613603ca1d76613ae2a#dc8eb1fba44af2768872b613603ca1d76613ae2a"
+version = "0.2.0"
+source = "git+https://github.com/revenue7-eng/tactiq-attest?rev=88930346c7f9f4120a636dc73739a66198fd81ab#88930346c7f9f4120a636dc73739a66198fd81ab"
 dependencies = [
  "hex",
  "sha2",
@@ -127,7 +127,6 @@ dependencies = [
  "ff",
  "generic-array",
  "group",
- "pkcs8",
  "rand_core",
  "sec1",
  "subtle",
@@ -139,7 +138,6 @@ name = "erc-level3"
 version = "0.1.0"
 dependencies = [
  "attest-appraise",
- "p256",
 ]
 
 [[package]]
@@ -217,16 +215,6 @@ dependencies = [
  "elliptic-curve",
  "primeorder",
  "sha2",
-]
-
-[[package]]
-name = "pkcs8"
-version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f950b2377845cebe5cf8b5165cb3cc1a5e0fa5cfa3e1f7f55707d8fd82e0a7b7"
-dependencies = [
- "der",
- "spki",
 ]
 
 [[package]]
@@ -346,15 +334,6 @@ checksum = "77549399552de45a898a580c1b41d445bf730df867cc44e6c0233bbc4b8329de"
 dependencies = [
  "digest",
  "rand_core",
-]
-
-[[package]]
-name = "spki"
-version = "0.7.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d91ed6c858b01f942cd56b37a94b3e0a1798290327d1236e4d9cf4eaca44d29d"
-dependencies = [
- "der",
 ]
 
 [[package]]

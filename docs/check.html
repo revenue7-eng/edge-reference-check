@@ -129,7 +129,7 @@
   </section>
 
   <h2 id="level3">Level 3: a signed envelope against a signed reference set</h2>
-  <p>Level 3 needs two things from two different parties. From the publisher: a reference set and its signature. From the device: an attestation envelope, its signature, and the device's public key. The page checks the reference set's signature against a root certificate you have pinned yourself, then checks the envelope's signature with the device key, then whether the attested state is one the reference set recognises.</p>
+  <p>Level 3 needs two things from two different parties. From the publisher: a reference set and its signature. From the device: an attestation envelope, the TPM quote over it with its signature, and the public area of the TPM attestation key that made the quote. The page checks the reference set's signature against a root certificate you have pinned yourself, then that the key is a restricted TPM attestation key, then the quote's signature under it, then that the quote commits to this envelope and its PCR values, then whether the attested state is one the reference set recognises. An envelope signed by a key held in software (envelope v1) is not level 3 and is refused.</p>
   <p class="hint">Formats this page reads: reference sets in <code>tactiq-rim/1</code> with a detached CMS signature; envelopes in the 93-byte <code>attest-envelope</code> layout signed with ECDSA P-256. The envelope check is the publisher's open crate <code>attest-appraise</code>, compiled to WebAssembly from a pinned commit; the build is reproducible, see <code>wasm/build.sh</code> in this repository. A system that publishes another format is recorded in the catalog as such; this page does not read it yet.</p>
 
   <h2>4. Reference set</h2>
@@ -143,8 +143,9 @@
   <h2>5. Envelope</h2>
   <div class="l3in">
     <span class="filebtn"><input type="file" id="l3_msg" class="hidden" tabindex="-1"><button type="button" data-for="l3_msg">Envelope (.msg)</button><span class="fname" id="l3_msg_n">no file loaded</span></span>
-    <span class="filebtn"><input type="file" id="l3_sig" class="hidden" tabindex="-1"><button type="button" data-for="l3_sig">Envelope signature (.sig)</button><span class="fname" id="l3_sig_n">no file loaded</span></span>
-    <span class="filebtn"><input type="file" id="l3_key" class="hidden" accept=".pem" tabindex="-1"><button type="button" data-for="l3_key">Device public key (PEM)</button><span class="fname" id="l3_key_n">no file loaded</span></span>
+    <span class="filebtn"><input type="file" id="l3_att" class="hidden" tabindex="-1"><button type="button" data-for="l3_att">TPM quote (.attest)</button><span class="fname" id="l3_att_n">no file loaded</span></span>
+    <span class="filebtn"><input type="file" id="l3_sig" class="hidden" tabindex="-1"><button type="button" data-for="l3_sig">Quote signature (.sig)</button><span class="fname" id="l3_sig_n">no file loaded</span></span>
+    <span class="filebtn"><input type="file" id="l3_key" class="hidden" tabindex="-1"><button type="button" data-for="l3_key">Attestation key (TPM2B_PUBLIC, ak.pub)</button><span class="fname" id="l3_key_n">no file loaded</span></span>
     <span class="filebtn"><input type="file" id="l3_ev" class="hidden" tabindex="-1"><button type="button" data-for="l3_ev">Evidence bundle (optional)</button><span class="fname" id="l3_ev_n">none: an empty bundle is assumed</span></span>
   </div>
 
@@ -165,7 +166,7 @@
       <p style="margin-top:1rem"><strong>The reference set states what its values do not cover:</strong></p>
       <ul id="l3disclist" class="hint"></ul>
     </div>
-    <p class="hint" style="margin-top:1rem">OK here means: the reference set was signed under the root you pinned, the envelope was signed by the key you supplied, the evidence bundle is the one that was signed over, and the attested state is one the reference set recognises. It does not mean the envelope is the device's latest: that needs a record of the previous check, and this page keeps nothing. The counter is shown so that you can compare it yourself. Whether the key you supplied belongs to the device you think it does is outside the envelope and outside this page.</p>
+    <p class="hint" style="margin-top:1rem">OK here means: the reference set was signed under the root you pinned, the key you supplied is a restricted TPM attestation key, the TPM quoted under it over exactly this envelope and its PCR values, the evidence bundle is the one that was signed over, and the attested state is one the reference set recognises. It does not mean the envelope is the device's latest: that needs a record of the previous check, and this page keeps nothing. The counter is shown so that you can compare it yourself. Whether the key you supplied belongs to the device you think it does is outside the envelope and outside this page: the page shows the key's TPM name, and the publisher's signed registration record of that key against the TPM's endorsement certificate names it as <code>ak_name</code>. Compare the two yourself.</p>
   </section>
 
   <footer>
@@ -552,7 +553,7 @@
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var files = {};
-  var ids = ['l3_rim', 'l3_p7s', 'l3_root', 'l3_msg', 'l3_sig', 'l3_key', 'l3_ev'];
+  var ids = ['l3_rim', 'l3_p7s', 'l3_root', 'l3_msg', 'l3_att', 'l3_sig', 'l3_key', 'l3_ev'];
 
   Array.prototype.forEach.call(document.querySelectorAll('.l3in button[data-for]'), function (b) {
     b.addEventListener('click', function () { $(b.getAttribute('data-for')).click(); });
@@ -567,20 +568,21 @@
     });
   });
 
-  // Codes returned by erc_check (wasm/src/lib.rs).
-  var STEPS = ['Reference set signature', 'Reference set readable', 'Envelope signature', 'Evidence bundle bound to the envelope', 'Attested state in the reference set', 'Evidence the reference set requires', 'Freshness'];
+  // Codes returned by erc_check_v2 (wasm/src/lib.rs).
+  var STEPS = ['Reference set signature', 'Reference set readable', 'Attestation key', 'Quote signature', 'Quote bound to the envelope', 'Evidence bundle bound to the envelope', 'Attested state in the reference set', 'Evidence the reference set requires', 'Freshness'];
   var CODE = {
-    0: [5, null, 'Accepted'],
-    1: [2, 'FAIL', 'the signature does not verify under the supplied key'],
-    3: [2, 'FAIL', 'the envelope is not a well-formed attest-envelope'],
-    4: [3, 'FAIL', 'the evidence bundle is not the one the envelope was signed over'],
-    5: [4, 'FAIL', 'the attested selection and composite are not in the reference set'],
-    6: [5, 'FAIL', 'the evidence bundle cannot be parsed'],
-    7: [5, 'FAIL', 'a source the reference set requires is missing from the bundle'],
-    8: [5, 'FAIL', 'an evidence source did not match its reference'],
-    100: [2, 'UNAVAILABLE', 'the device key is not a P-256 public key in PEM'],
+    0: [7, null, 'Accepted'],
+    1: [3, 'FAIL', 'the quote signature does not verify under the supplied attestation key'],
+    3: [3, 'FAIL', 'the envelope or the quote is not well-formed'],
+    9: [4, 'FAIL', 'the quote verifies but does not commit to this envelope or its PCR values'],
+    4: [5, 'FAIL', 'the evidence bundle is not the one the envelope was signed over'],
+    5: [6, 'FAIL', 'the attested selection and composite are not in the reference set'],
+    6: [7, 'FAIL', 'the evidence bundle cannot be parsed'],
+    7: [7, 'FAIL', 'a source the reference set requires is missing from the bundle'],
+    8: [7, 'FAIL', 'an evidence source did not match its reference'],
     101: [1, 'FAIL', 'the reference set is not UTF-8'],
-    102: [1, 'FAIL', 'the reference set cannot be read']
+    102: [1, 'FAIL', 'the reference set cannot be read'],
+    103: [2, 'FAIL', 'not a TPM2B_PUBLIC of a restricted signing key generated in a TPM']
   };
 
   var wasmP = null;
@@ -590,14 +592,6 @@
       return r.arrayBuffer();
     }).then(function (b) { return WebAssembly.instantiate(b); }).then(function (m) { return m.instance.exports; });
     return wasmP;
-  }
-  function pemBody(bytes, label) {
-    var t = new TextDecoder().decode(bytes);
-    var m = new RegExp('-----BEGIN ' + label + '-----([\\s\\S]*?)-----END ' + label + '-----').exec(t);
-    if (!m) return null;
-    var bin = atob(m[1].replace(/\s+/g, '')), out = new Uint8Array(bin.length);
-    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
-    return out;
   }
   function hex(b) { return Array.prototype.map.call(b, function (x) { return (x < 16 ? '0' : '') + x.toString(16); }).join(''); }
   function row(status, step, detail) {
@@ -611,7 +605,7 @@
   }
 
   $('l3run').addEventListener('click', function () {
-    var need = { l3_rim: 'reference set', l3_p7s: 'its signature', l3_root: 'root', l3_msg: 'envelope', l3_sig: 'envelope signature', l3_key: 'device key' };
+    var need = { l3_rim: 'reference set', l3_p7s: 'its signature', l3_root: 'root', l3_msg: 'envelope', l3_att: 'TPM quote', l3_sig: 'quote signature', l3_key: 'attestation key' };
     var missing = Object.keys(need).filter(function (k) { return !files[k]; }).map(function (k) { return need[k]; });
     var m = $('l3msg');
     if (missing.length) { m.className = 'hint err'; m.textContent = 'Missing: ' + missing.join(', ') + '.'; return; }
@@ -630,33 +624,34 @@
       for (var i = 1; i < STEPS.length; i++) row('NOT RUN', STEPS[i], 'the reference set is not authenticated');
       throw null;
     }).then(function (ctx) {
-      var w = ctx.w, key = pemBody(files.l3_key, 'PUBLIC KEY') || new Uint8Array(0);
-      var ev = files.l3_ev || new Uint8Array(0);
-      var bufs = [files.l3_msg, files.l3_sig, ev, key, files.l3_rim], args = [], ptrs = [];
+      var w = ctx.w, ev = files.l3_ev || new Uint8Array(0);
+      var bufs = [files.l3_msg, files.l3_att, files.l3_sig, ev, files.l3_key, files.l3_rim], args = [], ptrs = [];
       bufs.forEach(function (b) {
         var p = w.erc_alloc(b.length); new Uint8Array(w.memory.buffer, p, b.length).set(b);
         args.push(p, b.length); ptrs.push([p, b.length]);
       });
-      var code = w.erc_check.apply(null, args);
+      var code = w.erc_check_v2.apply(null, args);
       var detail = new TextDecoder().decode(new Uint8Array(w.memory.buffer, w.erc_detail_ptr(), w.erc_detail_len()));
+      var akName = hex(new Uint8Array(w.memory.buffer, w.erc_name_ptr(), w.erc_name_len()));
       ptrs.forEach(function (p) { w.erc_free(p[0], p[1]); });
       var c = CODE[code] || [2, 'FAIL', 'unexpected result code ' + code];
       var failedAt = code === 0 ? STEPS.length : c[0];
       for (var i = 1; i < STEPS.length - 1; i++) {
         if (i < failedAt) row('OK', STEPS[i], '');
-        else if (i === failedAt) row(c[1], STEPS[i], c[2] + (code >= 100 || code === 3 ? ' (' + detail + ')' : ''));
+        else if (i === failedAt) row(c[1], STEPS[i], c[2] + (code >= 100 || code === 3 || code === 9 ? ' (' + detail + ')' : ''));
         else row('NOT RUN', STEPS[i], 'an earlier step did not hold');
       }
-      var msg = files.l3_msg, authentic = code === 0 || code >= 4 && code < 100;
+      var msg = files.l3_msg, authentic = code === 0 || code >= 4 && code <= 8;
       if (authentic) {
         var counter = 0n; for (var j = 16; j < 24; j++) counter = counter * 256n + BigInt(msg[j]);
-        row('NOT ASSESSED', STEPS[6], 'counter ' + counter + '. Whether this is the latest envelope is not judged here');
+        row('NOT ASSESSED', STEPS[8], 'counter ' + counter + '. Whether this is the latest envelope is not judged here');
         fact('Device', new TextDecoder().decode(msg.subarray(0, 16)).replace(/\0+$/, ''));
         fact('Counter', String(counter));
         fact('Selection', hex(msg.subarray(24, 29)));
         fact('Composite', hex(msg.subarray(29, 61)));
+        fact('Attestation key name', akName);
       } else {
-        row('NOT RUN', STEPS[6], 'the envelope is not authenticated');
+        row('NOT RUN', STEPS[8], 'the envelope is not authenticated');
       }
       try {
         var rim = JSON.parse(new TextDecoder().decode(files.l3_rim));

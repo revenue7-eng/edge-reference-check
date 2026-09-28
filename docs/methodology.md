@@ -30,10 +30,13 @@ they have, and the measurements their device produces, against that
 reference. Level 2 proves that the artefact on disk is the one that was
 published. It does not prove that the artefact is what booted.
 
-**Level 3: attested state against reference set.** The device produces a
-signed attestation envelope from a hardware root of trust. The page
-verifies the signature with the device's public key and checks the
-attested measurement against a reference set. Level 3 proves that the
+**Level 3: attested state against reference set.** The device produces an
+attestation envelope and a quote over it from a hardware root of trust: a
+TPM signs the envelope's PCR values with a restricted attestation key that
+never leaves it. The page checks that the key is such a key, verifies the
+quote's signature with it, checks that the quote commits to this envelope
+and its PCR values, and checks the attested measurement against a reference
+set. An envelope signed by a key held in software is not level 3. Level 3 proves that the
 measured boot state is one the reference set recognises.
 
 What level 3 on this page does not do: adjudicate freshness. A
