@@ -20,10 +20,10 @@ terms as any other, is described in the same words, and is not marked up for
 being ours. Two of the sections below record defects found while running this
 catalog's own procedure against our own release.
 
-Verdicts were established against release `v2.1.0-rc11`, except the L3
-verdict, which was established against `v2.1.0-rc13` on 2026-09-28. The page was keyed to
-`v2.1.0-rc10` until 2026-09-22. What changed with the newer release is the
-Expected measurements column: the publisher now issues the boot measurements a
+Verdicts refer to release `v2.1.0-rc13` and were last re-established against it
+on 2026-09-28. The page was keyed to `v2.1.0-rc11` from 2026-09-22 until then, and to
+`v2.1.0-rc10` before that. What changed with `v2.1.0-rc11` was the Expected
+measurements column: the publisher now issues the boot measurements a
 device of this platform is expected to produce, together with the inputs and
 the program that recompute them. Published artefacts are never replaced after
 the fact, so the assets of the earlier tags still behave as the earlier
@@ -39,14 +39,14 @@ list and a reader following it gets nothing.
 curl -sI https://github.com/revenue7-eng/tactiq-os/releases/latest | grep -i ^location
 ```
 
-Our output, 2026-09-22:
+Our output, 2026-09-28:
 
 ```
 location: https://github.com/revenue7-eng/tactiq-os/releases
 ```
 
 The redirect goes to `/releases`, not to a tag. Tags have to be read from the
-list instead, and the most recent is `v2.1.0-rc11`. This is a defect in how
+list instead, and the most recent is `v2.1.0-rc13`. This is a defect in how
 this system publishes, recorded here rather than quietly worked around.
 
 The publisher's README states that `latest` is not used while every release is
@@ -55,37 +55,42 @@ lifted at general availability. That documents the behaviour; it does not
 change it. A reader arriving at an empty `latest` can now find out why from the
 publisher rather than from us. The empty redirect itself stands until a release
 that is not a candidate is published, and it has now been observed against
-three tags.
+four tags.
 
 ## Integrity
 
-`published`, established 2026-09-13, re-established against `v2.1.0-rc11` on
-2026-09-22. The release carries `SHA256SUMS` covering twenty artefacts,
+`published`, established 2026-09-13, re-established against `v2.1.0-rc13` on
+2026-09-28. The release carries `SHA256SUMS` covering twenty-three artefacts,
 including the image, the kernel, the device tree, the SBOM, the CVE reports, an
 OTA bundle, a verity reference, a build-configuration snapshot, the coverage
-manifest, and the boot measurement reference with its inputs.
+manifest, the boot measurement reference with its inputs, and the signed
+reference integrity manifest.
 
 ```sh
-B=https://github.com/revenue7-eng/tactiq-os/releases/download/v2.1.0-rc11
+B=https://github.com/revenue7-eng/tactiq-os/releases/download/v2.1.0-rc13
 curl -sL $B/SHA256SUMS -o SHA256SUMS
 wc -l < SHA256SUMS
 sha256sum SHA256SUMS
 ```
 
-Our output, 2026-09-22:
+Our output, 2026-09-28:
 
 ```
-20
-e7d3c8db149420ffb69f0a3b6d56db4d33cc408604b0db45c47f3b71bded4c7b
+23
+0fed92ca1c49e992b3bab8622df1e3f7fabd931f7670088fe9a037c010bf7357
 ```
 
 The checksum file does not list itself, its signature or its certificate, which
 is correct: those are verified by the signature, not by the list.
 
-Seven artefacts are new against `v2.1.0-rc10`, which carried thirteen. Six of
-them belong to the boot measurement reference and are described under Expected
-measurements below; the seventh is `buildinfo-rock5a.json`, a snapshot of the
-build configuration that produced the release.
+Three artefacts are new against `v2.1.0-rc11`, which carried twenty.
+`rim-rock5a.json` and `rim-rock5a.json.p7s` are the signed reference
+integrity manifest described under L3 reference set below;
+`tactiq-release-rock5a` is a short text file naming the version, the build
+machine and the release tag. The coverage manifest is renamed with the tag.
+`v2.1.0-rc11` in turn added seven artefacts to the thirteen of `v2.1.0-rc10`:
+six belonging to the boot measurement reference, and `buildinfo-rock5a.json`,
+a snapshot of the build configuration that produced the release.
 
 `verity-rock5a.params` is still released. It carries the root hash of a
 dm-verity tree over the image, which lets a consumer check blocks rather than
@@ -98,8 +103,8 @@ What that file is not is covered under Expected measurements below.
 
 ## Signature
 
-`published`, established 2026-09-13, re-established against `v2.1.0-rc11` on
-2026-09-22. `SHA256SUMS` is signed with a keyless Sigstore certificate issued
+`published`, established 2026-09-13, re-established against `v2.1.0-rc13` on
+2026-09-28. `SHA256SUMS` is signed with a keyless Sigstore certificate issued
 to the release workflow, and the signature verifies with nothing but `openssl`.
 
 The certificate is served as PEM, as it has been since `v2.1.0-rc10`. The
@@ -107,7 +112,7 @@ signature asset is base64-encoded, so the two assets of the same signing event
 need different handling: the commands below decode one and not the other.
 
 ```sh
-B=https://github.com/revenue7-eng/tactiq-os/releases/download/v2.1.0-rc11
+B=https://github.com/revenue7-eng/tactiq-os/releases/download/v2.1.0-rc13
 curl -sL $B/SHA256SUMS -o SHA256SUMS
 curl -sL $B/SHA256SUMS.workflow.pem -o cert.pem
 curl -sL $B/SHA256SUMS.workflow.sig | base64 -d > sig.der
@@ -118,13 +123,13 @@ openssl x509 -in cert.pem -pubkey -noout > pub.pem
 openssl dgst -sha256 -verify pub.pem -signature sig.der SHA256SUMS
 ```
 
-Our output, 2026-09-22:
+Our output, 2026-09-28:
 
 ```
-URI:https://github.com/revenue7-eng/tactiq-os/.github/workflows/release-sign.yml@refs/tags/v2.1.0-rc11
+URI:https://github.com/revenue7-eng/tactiq-os/.github/workflows/release-sign.yml@refs/tags/v2.1.0-rc13
 issuer=O = sigstore.dev, CN = sigstore-intermediate
-notBefore=Sep 22 17:14:22 2026 GMT
-notAfter=Sep 22 17:24:22 2026 GMT
+notBefore=Sep 28 08:36:58 2026 GMT
+notAfter=Sep 28 08:46:58 2026 GMT
 Verified OK
 ```
 
@@ -137,60 +142,62 @@ The identity in the certificate is the release workflow at the tag, not a
 person. A reader checking this system should pin that identity: a signature
 made by any other workflow, or from a branch instead of a tag, is a different
 claim even though it verifies. The identity moves with the tag, so the URI
-above names `v2.1.0-rc11` and a check against another release will name that
+above names `v2.1.0-rc13` and a check against another release will name that
 release instead.
 
 ## SBOM
 
-`published`, established 2026-09-13, re-established against `v2.1.0-rc11` on
-2026-09-22. `sbom-rock5a.spdx.json` is released alongside the image and is
+`published`, established 2026-09-13, re-established against `v2.1.0-rc13` on
+2026-09-28. `sbom-rock5a.spdx.json` is released alongside the image and is
 covered by `SHA256SUMS`, so it is inside the signed set rather than sitting
 next to it.
 
 ```sh
-B=https://github.com/revenue7-eng/tactiq-os/releases/download/v2.1.0-rc11
+B=https://github.com/revenue7-eng/tactiq-os/releases/download/v2.1.0-rc13
 curl -sL $B/sbom-rock5a.spdx.json -o sbom.json
 sha256sum sbom.json
 grep sbom-rock5a.spdx.json SHA256SUMS
 ```
 
-Our output, 2026-09-22: the digest matches the line in `SHA256SUMS`.
+Our output, 2026-09-28: the digest matches the line in `SHA256SUMS`.
 
 ```
-7601469a787fd45395e8c110e77a6ec252876c293cf0c24c52883d194bd592ab  sbom.json
-7601469a787fd45395e8c110e77a6ec252876c293cf0c24c52883d194bd592ab  sbom-rock5a.spdx.json
+a52a54c20b02fc930b072054c6d1c2603dbd6082c14d9d39ff37d4d2d51c0033  sbom.json
+a52a54c20b02fc930b072054c6d1c2603dbd6082c14d9d39ff37d4d2d51c0033  sbom-rock5a.spdx.json
 ```
 
 ## Transparency log
 
-`published`, established 2026-09-13, re-established against `v2.1.0-rc11` on
-2026-09-22. The signing event is recorded in the public Rekor log and can be
+`published`, established 2026-09-13, re-established against `v2.1.0-rc13` on
+2026-09-28. The signing event is recorded in the public Rekor log and can be
 looked up from the digest alone, without the release page and without this
 project.
 
 ```sh
-H=$(curl -sL https://github.com/revenue7-eng/tactiq-os/releases/download/v2.1.0-rc11/SHA256SUMS | sha256sum | cut -d' ' -f1)
+H=$(curl -sL https://github.com/revenue7-eng/tactiq-os/releases/download/v2.1.0-rc13/SHA256SUMS | sha256sum | cut -d' ' -f1)
 curl -s -X POST -H 'Content-Type: application/json' -d "{\"hash\":\"sha256:$H\"}" https://rekor.sigstore.dev/api/v1/index/retrieve
 ```
 
-Our output, 2026-09-22: one entry, UUID
-`108e9186e8c5677af2389cba1d15f0ed59f97f456f81a60a4661165951ad94b942756d9746dc08c8`.
-Fetching that entry gives log index `2910068424`, integrated 2026-09-22
-17:14:23 UTC, over the same digest as above.
+Our output, 2026-09-28: one entry, UUID
+`108e9186e8c5677a53d6ac9fffaeb976c58ce9486082fabf8d2a1172201fc2e12bb92e2fbd77c25e`.
+Fetching that entry gives log index `2981654055`, integrated 2026-09-28
+08:36:59 UTC, over the same digest as above.
 
 The integration time falls at the start of the ten-minute certificate window,
 which is what ties the two together.
 
 ## Expected measurements
 
-`published`, established 2026-09-22, against `v2.1.0-rc11`. The release carries
+`published`, established 2026-09-22 against `v2.1.0-rc11`, re-established
+against `v2.1.0-rc13` on 2026-09-28. The release carries
 `pcr-reference-rock5a.json`: the SHA-256 values a device of this platform is
 expected to report in TPM PCRs 0, 1, 4, 6, 8 and 9 after booting this release.
 PCR 1 carries one value per A/B slot, because the kernel command line differs
 between them.
 
-The verdict of this column is about what the publisher issues, and this is the
-first release of this system where anything exists to issue: the platform now
+The verdict of this column is about what the publisher issues, and
+`v2.1.0-rc11` was the first release of this system where anything existed to
+issue: the platform now
 measures its boot chain into a discrete TPM. The earlier `not yet` rested on
 the absence of measurements, not on the absence of a document.
 
@@ -200,7 +207,7 @@ rather than trusting it, and the recomputation runs offline once the files are
 downloaded.
 
 ```sh
-B=https://github.com/revenue7-eng/tactiq-os/releases/download/v2.1.0-rc11
+B=https://github.com/revenue7-eng/tactiq-os/releases/download/v2.1.0-rc13
 for f in SHA256SUMS pcr-reference-rock5a.json mk-pcr-reference.py fitImage-rock5a \
          extlinux-rock5a.conf u-boot-rock5a.itb idbloader-rock5a.img \
          tactiq-boot-rock5a.env kernel-rock5a.bin rk3588s-rock-5a.dtb; do
@@ -214,7 +221,7 @@ python3 mk-pcr-reference.py --fit fitImage-rock5a --extlinux extlinux-rock5a.con
 cmp recomputed.json pcr-reference-rock5a.json; echo cmp-exit=$?
 ```
 
-Our output, 2026-09-22: every downloaded file matches its line in
+Our output, 2026-09-28: every downloaded file matches its line in
 `SHA256SUMS`, and the recomputed reference is byte-identical to the published
 one.
 
@@ -232,7 +239,7 @@ root hash is a property of an artefact, recomputable by anyone holding the
 file. Expected measurements are a property of a device.
 
 Two limits a reader should carry, both stated by the publisher in
-`coverage-rock5a.v2.1.0-rc11.yaml` in the same release rather than found by us:
+`coverage-rock5a.v2.1.0-rc13.yaml` in the same release rather than found by us:
 the first-stage bootloader is the unmeasured root of the chain and the SoC
 fuses are not burned, so nothing authenticates that stage; and the final values
 of the release chain were computed and only partly observed on hardware,
@@ -240,7 +247,15 @@ because the production image has no console. What this column records is that
 the publisher issues the values and the means to recompute them, which is now
 the case.
 
-Source: <https://github.com/revenue7-eng/tactiq-os/releases/tag/v2.1.0-rc11>
+The second limit is narrower than the coverage manifest of `v2.1.0-rc13`
+states, because that manifest was signed before the device evidence under L3
+reference set below existed. Two quotes from one board running this release
+report a digest of PCR 0 to 9 equal to the one recomputed from the signed
+reference for slot A. That is an observation of the slot A values on one
+board, read through the TPM rather than through a console. The slot B values
+remain computed only.
+
+Source: <https://github.com/revenue7-eng/tactiq-os/releases/tag/v2.1.0-rc13>
 
 ## L3 reference set
 
@@ -295,4 +310,5 @@ six that no publisher in this catalog has closed.
 | 2026-09-22 | Integrity, signature, SBOM, transparency log, re-run against `v2.1.0-rc11`, and the page re-keyed to that tag | All four `published`, verdicts unchanged. Twenty artefacts against thirteen in `v2.1.0-rc10`. `latest` still redirects to the release list, observed against a third tag |
 | 2026-09-22 | Expected measurements, against the release only | `published`. The release carries `pcr-reference-rock5a.json` with the five inputs and the program that derive it; recomputed from the downloaded files, byte-identical to the published reference |
 | 2026-09-22 | L3 reference set | `not yet`. The reference set is published and signed, but no device produces a signed attestation envelope to check against it |
+| 2026-09-28 | Integrity, signature, SBOM, transparency log, expected measurements, re-run against `v2.1.0-rc13`, and the page re-keyed to that tag | All five `published`, verdicts unchanged. Twenty-three artefacts against twenty in `v2.1.0-rc11`, the new ones being the signed reference integrity manifest with its signature and a release identification file. The reference recomputed from the downloaded inputs is byte-identical to the published one. `latest` still redirects to the release list, observed against a fourth tag |
 | 2026-09-28 | L3 reference set, against `v2.1.0-rc13` | `published`. The publisher's procedure `VERIFY-L3-rc13.md` run in a clean directory from the release assets and `l3-evidence-rc13.tar.gz`: every check passed, a tampered record was rejected. Infineon's server was unreachable from our network, so the archive copies of its CA certificates were used, pinned by fingerprint. The in-browser check was not run |
