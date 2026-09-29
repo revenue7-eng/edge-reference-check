@@ -14,10 +14,7 @@ path = "src/lib.rs"
 # the whole point: a reader rebuilds from this revision and compares bytes with
 # docs/assets/l3/erc_level3.wasm (see build.sh). Moving it is a reviewed change.
 [dependencies]
-attest-appraise = { git = "https://github.com/revenue7-eng/tactiq-attest", rev = "dc8eb1fba44af2768872b613603ca1d76613ae2a" }
-# pkcs8 for reading the device key as SubjectPublicKeyInfo. No default features:
-# the default pulls getrandom, which does not build for wasm32-unknown-unknown.
-p256 = { version = "0.13", default-features = false, features = ["ecdsa", "pkcs8"] }
+attest-appraise = { git = "https://github.com/revenue7-eng/tactiq-attest", rev = "88930346c7f9f4120a636dc73739a66198fd81ab" }
 
 [profile.release]
 opt-level = "s"

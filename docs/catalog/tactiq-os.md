@@ -288,8 +288,14 @@ was not checked. The evidence covers one board. The coverage manifest of
 `v2.1.0-rc13` still lists the corresponding row as `planned`, because it was
 signed before the evidence existed; the release notes say so.
 
-The in-browser check on this site was not run against this evidence. Whether it
-accepts the envelope format of this release is not examined.
+The in-browser check on this site was first built for an earlier envelope
+format and could not read this one: it took a software key and had no input for
+the quote. It now follows the publisher's crate at commit `8893034`, accepts
+only quoted envelopes, and was run against this evidence on 2026-09-28: with
+the release root pinned, both quotes are accepted, and the attestation key name
+it reports equals `ak_name` in the signed record. A quote paired with the other
+envelope is rejected at the quote signature. The page does not verify the
+registration record itself; the procedure above does.
 
 Source: <https://github.com/revenue7-eng/tactiq-os/releases/tag/v2.1.0-rc13>
 
@@ -312,3 +318,4 @@ six that no publisher in this catalog has closed.
 | 2026-09-22 | L3 reference set | `not yet`. The reference set is published and signed, but no device produces a signed attestation envelope to check against it |
 | 2026-09-28 | Integrity, signature, SBOM, transparency log, expected measurements, re-run against `v2.1.0-rc13`, and the page re-keyed to that tag | All five `published`, verdicts unchanged. Twenty-three artefacts against twenty in `v2.1.0-rc11`, the new ones being the signed reference integrity manifest with its signature and a release identification file. The reference recomputed from the downloaded inputs is byte-identical to the published one. `latest` still redirects to the release list, observed against a fourth tag |
 | 2026-09-28 | L3 reference set, against `v2.1.0-rc13` | `published`. The publisher's procedure `VERIFY-L3-rc13.md` run in a clean directory from the release assets and `l3-evidence-rc13.tar.gz`: every check passed, a tampered record was rejected. Infineon's server was unreachable from our network, so the archive copies of its CA certificates were used, pinned by fingerprint. The in-browser check was not run |
+| 2026-09-28 | In-browser L3 check, against `v2.1.0-rc13` | The check was rebuilt against the publisher's crate at `8893034` and now reads envelope v2 (quote, attestation key public area); envelope v1 is refused. Both quotes in `l3-evidence-rc13.tar.gz` accepted under the pinned release root; the reported attestation key name equals `ak_name` in the signed record. Verdict unchanged |
