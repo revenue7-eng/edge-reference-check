@@ -299,6 +299,47 @@ registration record itself; the procedure above does.
 
 Source: <https://github.com/revenue7-eng/tactiq-os/releases/tag/v2.1.0-rc13>
 
+## Release root
+
+Everything the publisher signs under L3 reference set chains to one
+certificate, `release-root-r2.pem`. It is attached to the release but is not
+listed in `SHA256SUMS`. Inside the signed set it is bound twice:
+`rim-rock5a.json` carries the SHA-256 of its public key, and the coverage
+manifest carries its fingerprint. That ties the root to the Sigstore signature
+of the tag, so a root swapped on the release page after signing is caught. It
+does not tie the root to anything outside the publisher's repository: whoever
+controls the repository from the start controls both.
+
+The fingerprint, for a reader confirming it through a channel other than the
+release page:
+
+```
+8E:10:04:1E:BB:FC:CB:A0:36:62:1B:2E:45:36:87:D2:9A:50:D7:15:65:F2:99:CB:41:28:B4:CE:B9:65:FF:E8
+```
+
+This page is not that channel. It is hosted under the same GitHub account as
+the release, so it adds reach, not independence. The publisher prints the same
+value in its measured-boot article on LinkedIn, in an update dated
+2026-09-29, and an independent verifier prints the value it observed at
+<https://ankr.in/tactiq-verification.html>.
+
+The root and the manifest that names it, directly:
+
+- <https://github.com/revenue7-eng/tactiq-os/releases/download/v2.1.0-rc13/release-root-r2.pem>
+- <https://github.com/revenue7-eng/tactiq-os/releases/download/v2.1.0-rc13/rim-rock5a.json>
+
+```sh
+B=https://github.com/revenue7-eng/tactiq-os/releases/download/v2.1.0-rc13
+curl -sL $B/release-root-r2.pem -o root.pem
+openssl x509 -in root.pem -noout -fingerprint -sha256
+```
+
+Our output, 2026-09-29:
+
+```
+sha256 Fingerprint=8E:10:04:1E:BB:FC:CB:A0:36:62:1B:2E:45:36:87:D2:9A:50:D7:15:65:F2:99:CB:41:28:B4:CE:B9:65:FF:E8
+```
+
 ## Independent rebuild
 
 `not examined`. This is the next item for this page, and the only one of the
@@ -319,3 +360,4 @@ six that no publisher in this catalog has closed.
 | 2026-09-28 | Integrity, signature, SBOM, transparency log, expected measurements, re-run against `v2.1.0-rc13`, and the page re-keyed to that tag | All five `published`, verdicts unchanged. Twenty-three artefacts against twenty in `v2.1.0-rc11`, the new ones being the signed reference integrity manifest with its signature and a release identification file. The reference recomputed from the downloaded inputs is byte-identical to the published one. `latest` still redirects to the release list, observed against a fourth tag |
 | 2026-09-28 | L3 reference set, against `v2.1.0-rc13` | `published`. The publisher's procedure `VERIFY-L3-rc13.md` run in a clean directory from the release assets and `l3-evidence-rc13.tar.gz`: every check passed, a tampered record was rejected. Infineon's server was unreachable from our network, so the archive copies of its CA certificates were used, pinned by fingerprint. The in-browser check was not run |
 | 2026-09-28 | In-browser L3 check, against `v2.1.0-rc13` | The check was rebuilt against the publisher's crate at `8893034` and now reads envelope v2 (quote, attestation key public area); envelope v1 is refused. Both quotes in `l3-evidence-rc13.tar.gz` accepted under the pinned release root; the reported attestation key name equals `ak_name` in the signed record. Verdict unchanged |
+| 2026-09-29 | Release root | Not listed in `SHA256SUMS`; bound inside the signed set through `rim-rock5a.json` and the coverage manifest. Fingerprint added to this page, with the note that this page shares the release's GitHub account and is not a second channel |
