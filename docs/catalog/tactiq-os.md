@@ -319,8 +319,9 @@ release page:
 
 This page is not that channel. It is hosted under the same GitHub account as
 the release, so it adds reach, not independence. The publisher prints the same
-value in its measured-boot article on LinkedIn, in an update dated
-2026-09-29, and an independent verifier prints the value it observed at
+value in its measured-boot article on LinkedIn
+(<https://www.linkedin.com/pulse/measured-boot-against-what-andrey-lazarev-j3kwc/>),
+in an update dated 2026-09-29, and an independent verifier prints the value it observed at
 <https://ankr.in/tactiq-verification.html>.
 
 The root and the manifest that names it, directly:
