@@ -20,6 +20,7 @@ absence.
 | --- | --- | --- | --- | --- | --- |
 | [TactiQ OS](tactiq-os) | ROCK 5A | published | published | published | published |
 | [Talos Linux](talos-linux) | bare metal | published | published | none to publish | none to publish |
+| [Kairos](kairos) | bare metal | published | published | none to publish | none to publish |
 | [Fedora CoreOS](fedora-coreos) | bare metal | published | published | not found | not found |
 | [Ubuntu Core](ubuntu-core) | bare metal, VMs | published | published | not found | not found |
 | [Torizon OS](torizon-os) | SL1680 | published | not found | not found | not found |
@@ -63,13 +64,14 @@ not belong in this table.
 
 ## What the table says so far
 
-Seven publishers. Five release a public artefact and assert which bytes it is,
-by five different mechanisms: a Sigstore bundle over the checksum file, a
-detached signature per artefact, a detached OpenPGP signature over the checksum
-file, a keyless certificate bound to a release workflow, and digest sidecars
-with no signature at all. Four of those five sign the assertion. One does not,
-and a reader who sees a directory full of digests can easily miss that, which
-is why the table separates identity from signature.
+Eight publishers. Six release a public artefact and assert which bytes it is,
+by six different mechanisms: a Sigstore bundle over one checksum file for the
+whole release, a Sigstore bundle over each artefact's own checksum file, a
+detached signature per artefact, a detached OpenPGP signature over the
+checksum file, a keyless certificate bound to a release workflow, and digest
+sidecars with no signature at all. Five of those six sign the assertion. One
+does not, and a reader who sees a directory full of digests can easily miss
+that, which is why the table separates identity from signature.
 
 Two release nothing a person outside a commercial relationship can fetch, so
 for them there is nothing to check at all. Those rows are empty across the
@@ -80,11 +82,11 @@ per-customer factories, the other used to serve prebuilt binaries from a public
 page that now forwards to marketing. For both, every public repository of every
 public organisation was enumerated before the row was written.
 
-On the second half of level 2, six of the seven do not issue the boot
+On the second half of level 2, seven of the eight do not issue the boot
 measurements a device of that platform should produce. Where the mechanism is
 documented, it computes the sealing target on the device at installation, or
 generates it per image under a key the operator or the customer holds. The
-seventh is TactiQ OS, the system this project's authors build. Its row is
+eighth is TactiQ OS, the system this project's authors build. Its row is
 filled from its own releases under the same rules as every other row, and the
 check history on its page shows when each verdict changed.
 
@@ -105,7 +107,7 @@ every `not found` on the other pages says where we looked.
 - **Expected measurements**: the publisher issues the boot measurements a
   device of this platform should produce. This is the second half of level 2,
   and it is recorded separately because a publisher can do the first without
-  the second, and four of the five here do exactly that.
+  the second, and five of the six here do exactly that.
 - **L3 reference set**: a signed reference set with a documented format, plus
   a way for the device to produce a signed attestation envelope.
 
