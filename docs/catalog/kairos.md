@@ -57,8 +57,9 @@ kairos-hadron-v0.5.1-core-arm64-generic-v4.3.0.iso.sha256
 kairos-hadron-v0.5.1-core-arm64-generic-v4.3.0.iso.sha256.bundle
 ```
 
-The remaining lines repeat the same three-file pattern for the `standard`
-images, which add k3s or k0s.
+Lines 7 to 33 repeat the same three-file pattern for the `standard` images,
+which add k3s or k0s. The last seven lines are tool archives, which appear in
+full in the listing below.
 
 ```sh
 curl -sL https://github.com/kairos-io/kairos/releases/download/v4.3.0/kairos-hadron-v0.5.1-core-amd64-generic-v4.3.0.iso.sha256
@@ -74,9 +75,50 @@ The file name inside the sidecar carries the build directory `artifacts/`. A
 reader who runs `sha256sum -c` next to a downloaded ISO gets a missing-file
 error rather than a mismatch, and has to compare the digest by hand.
 
-The release also carries `checksums.txt`. It covers the tool archives
-(`kairos-*`, `kcrypt-challenger-*`, `provider-kairos-*`), not the ISOs, and it
-has no signature beside it.
+The release has 57 assets in total. 33 of them are ISOs with their `.sha256`
+and `.sha256.bundle` files (eleven ISOs, three files each), all listed by the
+command above. The other 24 are everything else in the release:
+
+```sh
+curl -sL https://github.com/kairos-io/kairos/releases/expanded_assets/v4.3.0 \
+  | grep -oE 'releases/download/v4\.3\.0/[^"]+' | sed 's|.*/||' | sort -u | wc -l
+curl -sL https://github.com/kairos-io/kairos/releases/expanded_assets/v4.3.0 \
+  | grep -oE 'releases/download/v4\.3\.0/[^"]+' | sed 's|.*/||' | sort -u | grep -vE '\.iso'
+```
+
+Our output, 2026-10-25:
+
+```
+57
+checksums.txt
+kairos-init-v4.3.0-linux-amd64.tar.gz
+kairos-init-v4.3.0-linux-arm64.tar.gz
+kairos-init-v4.3.0-linux-riscv64.tar.gz
+kairos-installer-v4.3.0-linux-amd64-fips.tar.gz
+kairos-installer-v4.3.0-linux-amd64.tar.gz
+kairos-installer-v4.3.0-linux-arm64-fips.tar.gz
+kairos-installer-v4.3.0-linux-arm64.tar.gz
+kairos-installer-v4.3.0-linux-riscv64.tar.gz
+kairos-v4.3.0-linux-amd64-fips.tar.gz
+kairos-v4.3.0-linux-amd64.tar.gz
+kairos-v4.3.0-linux-arm64-fips.tar.gz
+kairos-v4.3.0-linux-arm64.tar.gz
+kairos-v4.3.0-linux-riscv64.tar.gz
+kcrypt-challenger-v4.3.0-linux-amd64-fips.tar.gz
+kcrypt-challenger-v4.3.0-linux-amd64.tar.gz
+kcrypt-challenger-v4.3.0-linux-arm64-fips.tar.gz
+kcrypt-challenger-v4.3.0-linux-arm64.tar.gz
+kcrypt-challenger-v4.3.0-linux-riscv64.tar.gz
+provider-kairos-v4.3.0-linux-amd64-fips.tar.gz
+provider-kairos-v4.3.0-linux-amd64.tar.gz
+provider-kairos-v4.3.0-linux-arm64-fips.tar.gz
+provider-kairos-v4.3.0-linux-arm64.tar.gz
+provider-kairos-v4.3.0-linux-riscv64.tar.gz
+```
+
+`checksums.txt` covers the tool archives, not the ISOs, and no `.bundle`,
+`.sig` or `.pem` sits beside it, so it is not signed. No SPDX or SBOM file
+appears anywhere in the release.
 
 ```sh
 curl -sL https://github.com/kairos-io/kairos/releases/download/v4.3.0/checksums.txt | head -n 5
@@ -130,9 +172,12 @@ X509v3 Subject Alternative Name: critical
 
 Full verification with cosign, against that identity. With cosign v2.4.1 a
 v0.3 bundle needs `--new-bundle-format`; without it cosign reports that the
-bundle contains no certificate.
+bundle contains no certificate. cosign reads local files, so fetch the sidecar
+and its bundle first:
 
 ```sh
+curl -sLO https://github.com/kairos-io/kairos/releases/download/v4.3.0/kairos-hadron-v0.5.1-core-amd64-generic-v4.3.0.iso.sha256
+curl -sLO https://github.com/kairos-io/kairos/releases/download/v4.3.0/kairos-hadron-v0.5.1-core-amd64-generic-v4.3.0.iso.sha256.bundle
 cosign verify-blob --new-bundle-format \
   --bundle kairos-hadron-v0.5.1-core-amd64-generic-v4.3.0.iso.sha256.bundle \
   --certificate-identity https://github.com/kairos-io/kairos/.github/workflows/reusable-factory.yaml@refs/tags/v4.3.0 \
@@ -184,8 +229,8 @@ Source: <https://kairos.io/docs/installation/check-the-signatures/>, read
 `not found` as a release asset, established 2026-10-25. The publisher states
 that SBOM lists are pushed as release assets and gives an example for
 `v4.1.2`. Neither `v4.3.0` nor `v4.1.2` carries an SPDX or SBOM file among its
-assets. The asset listings for `v4.3.0` are in the sections above and
-below; for `v4.1.2`:
+assets. The full asset listing for `v4.3.0` is in the Integrity section; for
+`v4.1.2`:
 
 ```sh
 curl -sL https://github.com/kairos-io/kairos/releases/expanded_assets/v4.1.2 \
